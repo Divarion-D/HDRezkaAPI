@@ -28,7 +28,7 @@ class GetStream:
                     exit(0)
                 arr = self.decode_url(r['url'], separator="//_//").split(",")
                 # TODO Make quality select
-                stream_url = arr[-1][arr[-1].find("or") + 3:len(arr[-1])]
+                stream_url = arr[-1][arr[-1].find("or") + 3:]
                 decoded = True
             except (UnicodeDecodeError, BinasciiError):
                 print('Decoding error, trying again!')
@@ -55,11 +55,11 @@ class GetStream:
                     exit(0)
                 arr = self.decode_url(r['url'], separator="//_//").split(",")
                 # TODO Make quality select
-                stream_url = arr[-1][arr[-1].find("or") + 3:len(arr[-1])]
+                stream_url = arr[-1][arr[-1].find("or") + 3:]
                 decoded = True
             except (UnicodeDecodeError, BinasciiError):
                 print('Decoding error, trying again!')
-        
+
         return stream_url
 
     @staticmethod
@@ -80,5 +80,5 @@ class GetStream:
             temp = i.decode("utf-8")
             trash_string = trash_string.replace(temp, '')
 
-        final_string = base64.b64decode(trash_string + "==")
+        final_string = base64.b64decode(f"{trash_string}==")
         return final_string.decode("utf-8")

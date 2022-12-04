@@ -19,10 +19,11 @@ class Search:
         return iter(self.titles_list)
 
     def __str__(self):
-        s = ''
-        for title in self.titles_list:
-            s += (f'{title["id"]} - [{title["info"]["type"]}] Название: {title["name"]} | Год: {title["info"]["year"]} | '
-                  f'Страна: {title["info"]["country"]} | Жанр: {title["info"]["genre"]}\n')
+        s = ''.join(
+            f'{title["id"]} - [{title["info"]["type"]}] Название: {title["name"]} | Год: {title["info"]["year"]} | Страна: {title["info"]["country"]} | Жанр: {title["info"]["genre"]}\n'
+            for title in self.titles_list
+        )
+
         return s[:-1]
 
     def __get_info(self):

@@ -19,11 +19,11 @@ class MovieInfo:
         else:
             s += f'Сериал | {info["name"]}\nКоличество сезонов: {info["seasons_count"]}\n'
         s += f'Год выпуска: {info["year"]}\n' \
-             f'Страна:{info["country"]}\n' \
-             f'Длительность: {info["duration"]}\n' \
-             f'Рейтинг IMDb - {info["rating"]["imdb"]}\n' \
-             f'Рейтинг Кинопоиск - {info["rating"]["kp"]}\n' \
-             f'Жанр:'
+                 f'Страна:{info["country"]}\n' \
+                 f'Длительность: {info["duration"]}\n' \
+                 f'Рейтинг IMDb - {info["rating"]["imdb"]}\n' \
+                 f'Рейтинг Кинопоиск - {info["rating"]["kp"]}\n' \
+                 f'Жанр:'
         for i in info['genre']:
             s += f' {i}'
         if info["translations_list"]:
@@ -61,15 +61,15 @@ class MovieInfo:
         }
 
         rating = self.__get_rating()
-        data.update({'rating': rating})
+        data['rating'] = rating
 
         episodes_count = {}
 
         for i in range(1, data['seasons_count'] + 1):
             counter = len(self.soup.select(f'#simple-episodes-list-{i} > li'))
-            episodes_count.update({i: counter})
+            episodes_count[i] = counter
 
-        data.update({'seasons_episodes_count': episodes_count})
+        data['seasons_episodes_count'] = episodes_count
 
         return data
 
@@ -91,7 +91,7 @@ class MovieInfo:
         }
 
         rating = self.__get_rating()
-        data.update({'rating': rating})
+        data['rating'] = rating
 
         return data
 
@@ -114,18 +114,18 @@ class MovieInfo:
         }
 
         rating = self.__get_rating()
-        data.update({'rating ': rating})
+        data['rating '] = rating
 
         episodes_count = {}
 
         for i in range(1, data['seasons_count'] + 1):
             counter = len(self.soup.select(f'#simple-episodes-list-{i} > li'))
-            episodes_count.update({i: counter})
+            episodes_count[i] = counter
 
-        data.update({'seasons_episodes_count': episodes_count})
+        data['seasons_episodes_count'] = episodes_count
 
-        if len(episodes_count) == 0:
-            data.update({'type': 'movie'})
+        if not episodes_count:
+            data['type'] = 'movie'
             data.pop('seasons_count')
             data.pop('seasons_episodes_count')
 

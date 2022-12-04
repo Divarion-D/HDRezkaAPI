@@ -8,10 +8,10 @@ class Translations:
 
     def get(self):
         if len(self.translations):
-            data = []
-            for i in self.translations:
-                data.append({'name': i.text,
-                             'id': i.get('data-translator_id')})
-            return data
+            return [
+                {'name': i.text, 'id': i.get('data-translator_id')}
+                for i in self.translations
+            ]
+
         else:
             return None

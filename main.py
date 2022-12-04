@@ -24,12 +24,12 @@ elif download_type == 2:
     downloader.download_season(season)
     print('Скачивание успешно завершено!')
 elif download_type == 3:
-    correct_episode = False
     season = int(input('Введите номер сезона: '))
     episodes_count = download_data['seasons_episodes_count'][season]
     print(f'В данном сезоне количество эпизодов: {episodes_count}')
     start = int(input('Введите стартовый эпизод: '))
     end = int(input('Введите конечный эпизод: '))
+    correct_episode = False
     while not correct_episode:
         try:
             downloader.download_episodes(season, start, end)
