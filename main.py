@@ -1,18 +1,14 @@
 from HDRezkaAPI import *
 
-# search_text = input('Поиск: ')
-search_text = 'Рик и Морти'
+search_text = input('Поиск: ')
 search_result = Search(search_text)
 
 print(search_result)
 
-# title_id = int(input('Введите номер: '))
-title_id = 1
+title_id = int(input('Введите номер: '))
 movie_data = search_result.get_data(title_id)
 movie_info = MovieInfo(movie_data)
-print(movie_info)
 download_data = movie_info.get_data()
-
 
 downloader = Download(download_data)
 
