@@ -1,0 +1,4 @@
+venv
+.idea
+HDRezkaAPI/__pycache__
+*.mp4
