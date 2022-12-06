@@ -108,7 +108,7 @@ class Download:
             translator_id = self.__get_translation()
         else:
             translator_id = self.__detect_translation()
-        
+
         data = {
             'id': self.data['data-id'],
             'translator_id': translator_id,
@@ -119,7 +119,7 @@ class Download:
         stream_url = GetStream().get_movie_stream(data)
         # file_name = f"{self.data['name']}.mp4"
         # TODO Fix file name bug
-        file_name = f"test.mp4"
+        file_name = "test.mp4"
 
         download_data = {
             'stream_url': stream_url,
@@ -150,9 +150,9 @@ class Download:
     def __get_translation(self) -> int:
         for i, translation in zip(range(1, len(self.data['translations_list'])), self.data['translations_list']):
             print(f'{i} - {translation["name"]}')
-        translation_id = self.data['translations_list'][int(
-            input("Введите номер озвучки: ")) - 1]['id']
-        return translation_id
+        return self.data['translations_list'][
+            int(input("Введите номер озвучки: ")) - 1
+        ]['id']
 
     def __detect_translation(self):
         if self.data['type'] == 'movie':
@@ -161,6 +161,4 @@ class Download:
             event_type = 'initCDNSeriesEvents'
 
         tmp = str(self.soup).split(f"sof.tv.{event_type}")[-1].split("{")[0]
-        translator_id = tmp.split(",")[1].strip()
-
-        return translator_id
+        return tmp.split(",")[1].strip()
