@@ -16,22 +16,19 @@ async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, mirror)
     print(url)
     parser: HdRezkaParser = HdRezkaParser(url)
-    content_list = parser.get_content_list(mirror)
-    return content_list
+    return parser.get_content_list(mirror)
 
 
 @app.get("/content/details/")
 async def get_concrete(mirror_less_url: str):
     url = HDREZKA_URL + mirror_less_url
-    content = HdRezkaParser.get_concrete_content_info(url)
-    return content
+    return HdRezkaParser.get_concrete_content_info(url)
 
 
 @app.get("/content/translations/")
 async def get_content_translations(url: str = None):
     api: HdRezkaApi = HdRezkaApi(url)
-    translations = api.getTranslations()
-    return translations
+    return api.getTranslations()
 
 
 @app.get("/content/movie/videos/")
@@ -44,8 +41,7 @@ async def get_movie_videos(url: str = None, translation_id: str = None):
 @app.get("/content/tv_series/seasons/")
 async def get_tv_series_seasons(url: str, translation_id: str = None):
     api: HdRezkaApi = HdRezkaApi(url)
-    seasons = api.getSeasons(translator_id=translation_id)
-    return seasons
+    return api.getSeasons(translator_id=translation_id)
 
 
 @app.get("/content/tv_series/videos/")
@@ -61,8 +57,7 @@ async def search(query: str, page: int):
     mirror = HDREZKA_URL
     search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
     parser: HdRezkaParser = HdRezkaParser(search_url)
-    content = parser.get_content_list(mirror)
-    return content
+    return parser.get_content_list(mirror)
 
 
 @app.get("/content/category/page/{page}")
@@ -70,8 +65,7 @@ async def get_content_by_categories(page: int = 1, type: str = "films", genre: s
     mirror = HDREZKA_URL
     url = create_categories_url(page, type, genre, year, mirror)
     parser: HdRezkaParser = HdRezkaParser(url)
-    content = parser.get_content_list(mirror)
-    return content
+    return parser.get_content_list(mirror)
 
 
 def create_url(page: int, filter: str, type: str, mirror: str):
@@ -81,7 +75,7 @@ def create_url(page: int, filter: str, type: str, mirror: str):
         url += f"/page/{page}/"
     url += f"?filter={filter}"
     if genre_index != 0:
-        url = url + f"&genre={genre_index}"
+        url = f"{url}&genre={genre_index}"
     return url
 
 

@@ -24,9 +24,10 @@ class HdRezkaParser:
 
     @staticmethod
     def get_content_info(content, mirror):
-        content_info = {}
-        content_info["id"] = int(content.attrs["data-id"])
-        content_info["type"] = content.find("i", class_="entity").text
+        content_info = {
+            "id": int(content.attrs["data-id"]),
+            "type": content.find("i", class_="entity").text,
+        }
         content_info["title"] = content.find(
             "div", class_="b-content__inline_item-link").find("a").text
         content_info["mirrorLessUrl"] = content.find("div").find(
@@ -50,8 +51,7 @@ class HdRezkaParser:
         r = requests.get(url, headers=headers)
         html = BS(r.content, "html5lib")
 
-        content_info = {}
-        content_info["id"] = int(html.find(id="post_id").attrs['value'])
+        content_info = {"id": int(html.find(id="post_id").attrs['value'])}
         content_info["url"] = url
         content_info["affilation"] = html.find(
             'meta', property="og:type").attrs['content'].split(".")[-1]

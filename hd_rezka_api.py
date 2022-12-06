@@ -22,19 +22,19 @@ class HdRezkaStreamSubtitles():
         return str(self.keys)
 
     def __call__(self, id=None):
-        if self.subtitles:
-            if id:
-                if id in self.subtitles.keys():
-                    return self.subtitles[id]['link']
-                for key, value in self.subtitles.items():
-                    if value['title'] == id:
-                        return self.subtitles[key]['link']
-                if str(id).isnumeric:
-                    code = list(self.subtitles.keys())[id]
-                    return self.subtitles[code]['link']
-                raise ValueError(f'Subtitles "{id}" is not defined')
-            else:
-                return None
+        if not self.subtitles:
+            return
+        if not id:
+            return None
+        if id in self.subtitles.keys():
+            return self.subtitles[id]['link']
+        for key, value in self.subtitles.items():
+            if value['title'] == id:
+                return self.subtitles[key]['link']
+        if str(id).isnumeric:
+            code = list(self.subtitles.keys())[id]
+            return self.subtitles[code]['link']
+        raise ValueError(f'Subtitles "{id}" is not defined')
 
 
 class HdRezkaStream():
@@ -51,15 +51,15 @@ class HdRezkaStream():
         resolutions = list(self.videos.keys())
         if self.subtitles.subtitles:
             return f"<HdRezkaStream> : {resolutions}, subtitles={self.subtitles}"
-        return "<HdRezkaStream> : " + str(resolutions)
+        return f"<HdRezkaStream> : {resolutions}"
 
     def __repr__(self):
         return f"<HdRezkaStream(season:{self.season}, episode:{self.episode})>"
 
     def __call__(self, resolution):
-        coincidences = list(
-            filter(lambda x: str(resolution) in x, self.videos))
-        if len(coincidences) > 0:
+        if coincidences := list(
+            filter(lambda x: str(resolution) in x, self.videos)
+        ):
             return self.videos[coincidences[0]]
         raise ValueError(f'Resolution "{resolution}" is not defined')
 
@@ -115,7 +115,7 @@ class HdRezkaApi():
             temp = i.decode("utf-8")
             trashString = trashString.replace(temp, '')
 
-        finalString = base64.b64decode(trashString+"==")
+        finalString = base64.b64decode(f"{trashString}==")
         return finalString.decode("utf-8")
 
     def getTranslations(self):
@@ -168,10 +168,10 @@ class HdRezkaApi():
         seasons = BeautifulSoup(s, 'html.parser')
         episodes = BeautifulSoup(e, 'html.parser')
 
-        seasons_ = {}
-        for season in seasons.findAll(class_="b-simple_season__item"):
-            seasons_[season.attrs['data-tab_id']] = season.text
-
+        seasons_ = {
+            season.attrs['data-tab_id']: season.text
+            for season in seasons.findAll(class_="b-simple_season__item")
+        }
         episods = {}
         for episode in episodes.findAll(class_="b-simple_episode__item"):
             if episode.attrs['data-season_id'] in episods:
@@ -191,7 +191,10 @@ class HdRezkaApi():
                 "action": "get_episodes"
             }
             r = requests.post(
-                self.mirror+"/ajax/get_cdn_series/", data=js, headers=self.HEADERS)
+                f"{self.mirror}/ajax/get_cdn_series/",
+                data=js,
+                headers=self.HEADERS,
+            )
             response = r.json()
             seasons, episodes = self.getEpisodes(
                 response['seasons'], response['episodes'])
@@ -212,7 +215,10 @@ class HdRezkaApi():
                 "action": "get_episodes"
             }
             r = requests.post(
-                self.mirror+"/ajax/get_cdn_series/", data=js, headers=self.HEADERS)
+                f"{self.mirror}/ajax/get_cdn_series/",
+                data=js,
+                headers=self.HEADERS,
+            )
             response = r.json()
             if response['success']:
                 seasons, episodes = self.getEpisodes(
@@ -228,7 +234,10 @@ class HdRezkaApi():
     def getStream(self, season=None, episode=None, translation=None, index=0):
         def makeRequest(data):
             r = requests.post(
-                self.mirror+"/ajax/get_cdn_series/", data=data, headers=self.HEADERS)
+                f"{self.mirror}/ajax/get_cdn_series/",
+                data=data,
+                headers=self.HEADERS,
+            )
             r = r.json()
             if r['success']:
                 arr = self.clearTrash(r['url']).split(",")
@@ -244,7 +253,7 @@ class HdRezkaApi():
                 return stream
 
         def getStreamSeries(self, season, episode, translation_id):
-            if not (season and episode):
+            if not season or not episode:
                 raise TypeError(
                     "getStream() missing required arguments (season and episode)")
 
@@ -258,10 +267,10 @@ class HdRezkaApi():
             tr_str = list(self.translators.keys())[
                 list(self.translators.values()).index(translation_id)]
 
-            if not season in list(seasons[tr_str]['episodes']):
+            if season not in list(seasons[tr_str]['episodes']):
                 raise ValueError(f'Season "{season}" is not defined')
 
-            if not episode in list(seasons[tr_str]['episodes'][season]):
+            if episode not in list(seasons[tr_str]['episodes'][season]):
                 raise ValueError(f'Episode "{episode}" is not defined')
 
             return makeRequest({
@@ -334,7 +343,7 @@ class HdRezkaApi():
             self.getSeasons()
         seasons = self.seriesInfo
 
-        if not season in list(seasons[tr_str]['episodes']):
+        if season not in list(seasons[tr_str]['episodes']):
             raise ValueError(f'Season "{season}" is not defined')
 
         series = seasons[tr_str]['episodes'][season]
