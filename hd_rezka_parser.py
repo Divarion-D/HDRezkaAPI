@@ -33,20 +33,31 @@ class HdRezkaParser:
         content_info["mirrorLessUrl"] = content.find("div").find(
             "a").attrs["href"]
         content_info["imageUrl"] = content.find("img").attrs["src"]
-        content_info["year"] = content.find(
-            "div", class_="b-content__inline_item-link").find("div").text.split(',')[0]
-        content_info["country"] = content.find(
-            "div", class_="b-content__inline_item-link").find("div").text.split(',')[1].strip()
-        content_info["genre"] = content.find(
-            "div", class_="b-content__inline_item-link").find("div").text.split(',')[2].strip()
+        item_link = content.find(
+            "div", class_="b-content__inline_item-link").find("div").text.split(',')
+
+        content_info["year"] = item_link[0].strip()
+        content_info["country"] = item_link[1].strip()
+        content_info["genre"] = item_link[2].strip()
 
         status = content.find("span", class_="info")
         content_info["status"] = None if status is None else status.text
+
         return content_info
 
     @staticmethod
+    def get_concrete_content_info_by_id(mirror, id):
+        url = f"{mirror}engine/ajax/quick_content.php"
+        data = {"id": id, "is_touch": 1}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
+        r = requests.post(url, headers=headers, data=data)
+        html = BS(r.content, "html5lib")
+        return HdRezkaParser.get_concrete_content_info(html.find("div", class_="b-content__bubble_title").find("a").attrs["href"])
+
+    @staticmethod
     def get_concrete_content_info(url):
-        headers = headers = {
+        headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
         r = requests.get(url, headers=headers)
         html = BS(r.content, "html5lib")
@@ -70,17 +81,45 @@ class HdRezkaParser:
         for row in rows[:-1]:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
+            cols[0] = str(DataAtribute(cols[0].replace(":", "")))
             data.append([ele for ele in cols if ele])
+
         actors = [
             f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")]
         data.append(
-            [rows[-1].find("span", class_="l inline").text, "".join(actors)])
+            [str(DataAtribute(rows[-1].find("span", class_="l inline").text.replace(": ", ""))), "".join(actors)])
+
+        data = list(filter(lambda x: x[0] != "short_description", data))
         content_info["data"] = [{obj[0]: obj[1]} for obj in data]
 
-        content_info["translations"] = []
-        translations = html.find("ul", id="translators-list").find_all("li")
-        for translation in translations:
-            content_info["translations"].append(
-                {"name": translation.text, "id": translation.attrs["data-translator_id"]})
+        content_info["translations_id"] = []
+        
+        translations = html.find("ul", id="translators-list")
+        if translations is not None:
+            for translation in translations.find_all("li"):
+                content_info["translations_id"].append(
+                    {"name": translation.text, "id": translation.attrs["data-translator_id"]})
 
         return content_info
+
+
+class DataAtribute:
+    def __init__(self, name):
+        array = {
+            "Рейтинги": "rating",
+            "Слоган": "slogan",
+            "Дата выхода": "release",
+            "Страна": "country",
+            "Режиссер": "director",
+            "Жанр": "genre",
+            "В качестве": "quality",
+            "Возраст": "age",
+            "Время": "time",
+            "Из серии": "short_description",
+            "В переводе": "translation",
+            "В ролях актеры": "actors",
+        }
+        self.name = array[name]
+
+    def __str__(self):
+        return self.name

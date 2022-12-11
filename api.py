@@ -5,9 +5,21 @@ from hd_rezka_parser import HdRezkaParser
 from hd_rezka_api import HdRezkaApi
 import enum
 import socket
+import json
 
 app = FastAPI()
 HDREZKA_URL = "http://rd8j1em1zxge.org/"
+
+def custom_openapi():
+    with open("openapi.json", "r") as openapi:
+        return json.load(openapi)
+
+@app.get("/content/search/")
+async def search(query: str, page: int = 1):
+    mirror = HDREZKA_URL
+    search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
+    parser: HdRezkaParser = HdRezkaParser(search_url)
+    return parser.get_content_list(mirror)
 
 
 @app.get("/content/page/{page}")
@@ -20,9 +32,15 @@ async def get_content(page: int, filter: str = "last", type: str = "all"):
 
 
 @app.get("/content/details/")
-async def get_concrete(mirror_less_url: str):
-    url = HDREZKA_URL + mirror_less_url
-    return HdRezkaParser.get_concrete_content_info(url)
+async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
+    if url is None and id is None:
+        return {"error": "url or id is required"}
+    if url is not None and id is None:
+        return HdRezkaParser.get_concrete_content_info(url)
+    elif url is None and id is not None:
+        return HdRezkaParser.get_concrete_content_info_by_id(HDREZKA_URL, id)
+    else:
+        return {"error": "url and id cannot be used together"}
 
 
 @app.get("/content/translations/")
@@ -50,14 +68,6 @@ async def get_tv_series_videos(url: str, translation_id: str, season_id: str, se
     stream = api.getStream(translation=translation_id,
                            season=season_id, episode=series_id)
     return stream.videos
-
-
-@app.get("/content/search/")
-async def search(query: str, page: int):
-    mirror = HDREZKA_URL
-    search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
-    parser: HdRezkaParser = HdRezkaParser(search_url)
-    return parser.get_content_list(mirror)
 
 
 @app.get("/content/category/page/{page}")
@@ -120,6 +130,7 @@ class ContentGenre(enum.Enum):
 
 
 if __name__ == "__main__":
+    app.openapi = custom_openapi
     hostname = socket.gethostname()
     ip = socket.gethostbyname(hostname)
-    uvicorn.run(app, host=ip, port=8888)
+    uvicorn.run(app, port=8000)
