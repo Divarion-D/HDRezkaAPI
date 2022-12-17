@@ -30,7 +30,7 @@ async def search(query: str, page: int = 1):
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
-    if url is not None and id is None:
+    elif url is not None and id is None:
         return HdRezkaParser.get_concrete_content_info(url)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
@@ -52,7 +52,7 @@ async def get_content(page: int, filter: str = "last", type: str = "all"):
 async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
-    if url is not None and id is None:
+    elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
@@ -67,7 +67,7 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
 async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
-    if url is not None and id is None:
+    elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
