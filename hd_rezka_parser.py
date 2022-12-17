@@ -77,24 +77,23 @@ class HdRezkaParser:
         table_body = table.find("tbody")
         rows = table_body.find_all('tr')
         rows = table_body.find_all('tr')
-        
-        data =dict()
+
+        data = {}
         for row in rows[:-1]:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
             data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
-            
+
         # convert time 
         time = data.get("time")
         if time is not None:
             time = time.replace(" мин.", "")
-            hour = int(time) // 60
-            minute = int(time) % 60
+            hour, minute = divmod(int(time), 60)
             if hour < 10:
-                hour = "0" + str(hour)
+                hour = f"0{str(hour)}"
             if minute < 10:
-                minute = "0" + str(minute)
-            data["time"] = str(hour) + ":" + str(minute)
+                minute = f"0{str(minute)}"
+            data["time"] = f"{str(hour)}:{str(minute)}"
 
         actors = [
             f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")]
@@ -106,7 +105,7 @@ class HdRezkaParser:
         content_info["data"] = data
 
         content_info["translations_id"] = []
-        
+
         translations = html.find("ul", id="translators-list")
         if translations is not None:
             for translation in translations.find_all("li"):
