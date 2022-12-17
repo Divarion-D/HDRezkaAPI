@@ -8,11 +8,15 @@ import socket
 import json
 
 app = FastAPI()
+
 HDREZKA_URL = "http://rd8j1em1zxge.org/"
 
 def custom_openapi():
     with open("openapi.json", "r") as openapi:
         return json.load(openapi)
+
+app.openapi = custom_openapi
+
 
 @app.get("/content/search/")
 async def search(query: str, page: int = 1):
@@ -20,6 +24,19 @@ async def search(query: str, page: int = 1):
     search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
     parser: HdRezkaParser = HdRezkaParser(search_url)
     return parser.get_content_list(mirror)
+
+
+@app.get("/content/details/")
+async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
+    if url is None and id is None:
+        return {"error": "url or id is required"}
+    if url is not None and id is None:
+        return HdRezkaParser.get_concrete_content_info(url)
+    elif url is None and id is not None:
+        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        return HdRezkaParser.get_concrete_content_info(url)
+    else:
+        return {"error": "url and id cannot be used together"}
 
 
 @app.get("/content/page/{page}")
@@ -31,27 +48,33 @@ async def get_content(page: int, filter: str = "last", type: str = "all"):
     return parser.get_content_list(mirror)
 
 
-@app.get("/content/details/")
-async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
+@app.get("/content/translations/")
+async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
     if url is not None and id is None:
-        return HdRezkaParser.get_concrete_content_info(url)
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
-        return HdRezkaParser.get_concrete_content_info_by_id(HDREZKA_URL, id)
+        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
         return {"error": "url and id cannot be used together"}
 
-
-@app.get("/content/translations/")
-async def get_content_translations(url: str = None):
-    api: HdRezkaApi = HdRezkaApi(url)
     return api.getTranslations()
 
 
 @app.get("/content/movie/videos/")
-async def get_movie_videos(url: str = None, translation_id: str = None):
-    api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+    if url is None and id is None:
+        return {"error": "url or id is required"}
+    if url is not None and id is None:
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+    elif url is None and id is not None:
+        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+    else:
+        return {"error": "url and id cannot be used together"}
+
     stream = api.getStream(translation=translation_id)
     return stream.videos
 
@@ -64,7 +87,7 @@ async def get_tv_series_seasons(url: str, translation_id: str = None):
 
 @app.get("/content/tv_series/videos/")
 async def get_tv_series_videos(url: str, translation_id: str, season_id: str, series_id: str):
-    api: HdRezkaApi = HdRezkaApi(url)
+    api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     stream = api.getStream(translation=translation_id,
                            season=season_id, episode=series_id)
     return stream.videos
@@ -130,7 +153,5 @@ class ContentGenre(enum.Enum):
 
 
 if __name__ == "__main__":
-    app.openapi = custom_openapi
-    hostname = socket.gethostname()
-    ip = socket.gethostbyname(hostname)
-    uvicorn.run(app, port=8000)
+    ip = socket.gethostbyname(socket.gethostname())
+    uvicorn.run("api:app", host=ip, port=8000, debug=True, reload=True)

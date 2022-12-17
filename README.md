@@ -5,5 +5,5 @@ The server for hdrezka application. Install dependencies from requirements.txt a
 ## Run
 
 ```
-uvicorn api:app  --reload
+python3 api.py
 ```

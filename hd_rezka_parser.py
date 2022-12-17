@@ -46,14 +46,14 @@ class HdRezkaParser:
         return content_info
 
     @staticmethod
-    def get_concrete_content_info_by_id(mirror, id):
+    def get_url_by_id(mirror, id):
         url = f"{mirror}engine/ajax/quick_content.php"
         data = {"id": id, "is_touch": 1}
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
         r = requests.post(url, headers=headers, data=data)
         html = BS(r.content, "html5lib")
-        return HdRezkaParser.get_concrete_content_info(html.find("div", class_="b-content__bubble_title").find("a").attrs["href"])
+        return html.find("div", class_="b-content__bubble_title").find("a").attrs["href"]
 
     @staticmethod
     def get_concrete_content_info(url):
@@ -64,12 +64,12 @@ class HdRezkaParser:
 
         content_info = {"id": int(html.find(id="post_id").attrs['value'])}
         content_info["url"] = url
-        content_info["affilation"] = html.find(
+        content_info["type"] = html.find(
             'meta', property="og:type").attrs['content'].split(".")[-1]
         content_info["title"] = html.find(
             'div', class_="b-post__title").find("h1").text
         content_info["description"] = html.find(
-            'div', class_="b-post__description_text").text
+            'div', class_="b-post__description_text").text.strip()
         content_info["imageUrl"] = html.find(
             'div', class_="b-sidecover").find("a").attrs['href']
 
@@ -77,20 +77,33 @@ class HdRezkaParser:
         table_body = table.find("tbody")
         rows = table_body.find_all('tr')
         rows = table_body.find_all('tr')
-        data = []
+        
+        data =dict()
         for row in rows[:-1]:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
-            cols[0] = str(DataAtribute(cols[0].replace(":", "")))
-            data.append([ele for ele in cols if ele])
+            data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
+            
+        # convert time 
+        time = data.get("time")
+        if time is not None:
+            time = time.replace(" мин.", "")
+            hour = int(time) // 60
+            minute = int(time) % 60
+            if hour < 10:
+                hour = "0" + str(hour)
+            if minute < 10:
+                minute = "0" + str(minute)
+            data["time"] = str(hour) + ":" + str(minute)
 
         actors = [
             f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")]
-        data.append(
-            [str(DataAtribute(rows[-1].find("span", class_="l inline").text.replace(": ", ""))), "".join(actors)])
+        data["actors"] = "".join(actors).replace(" и другие ", "").strip()
 
-        data = list(filter(lambda x: x[0] != "short_description", data))
-        content_info["data"] = [{obj[0]: obj[1]} for obj in data]
+        data.pop("is_series_bad", None)
+        data.pop("list_bad", None)
+
+        content_info["data"] = data
 
         content_info["translations_id"] = []
         
@@ -115,9 +128,10 @@ class DataAtribute:
             "В качестве": "quality",
             "Возраст": "age",
             "Время": "time",
-            "Из серии": "short_description",
+            "Из серии": "is_series_bad",
             "В переводе": "translation",
             "В ролях актеры": "actors",
+            "Входит в списки": "list_bad"
         }
         self.name = array[name]
 

@@ -4,11 +4,18 @@
     "title": "FastAPI",
     "version": "0.1.0"
   },
+  "servers": [
+    {
+      "url": "http://127.0.1.1:8000",
+      "description": "Development server"
+    }
+  ],
   "paths": {
     "/content/search/": {
       "get": {
         "summary": "Search",
         "operationId": "search_content_search__get",
+        "description": "Search by name",
         "parameters": [
           {
             "required": true,
@@ -35,16 +42,50 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Search"
+                  }
+                }
               }
             }
+          }
+        }
+      }
+    },
+    "/content/details/": {
+      "get": {
+        "summary": "Get Concrete",
+        "operationId": "get_concrete_content_details__get",
+        "description": "Get detailed information by link or id",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Url",
+              "type": "string"
+            },
+            "name": "url",
+            "in": "query"
           },
-          "422": {
-            "description": "Validation Error",
+          {
+            "required": false,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/Concrete"
                 }
               }
             }
@@ -95,24 +136,15 @@
                 "schema": {}
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
         }
       }
     },
-    "/content/details/": {
+    "/content/translations/": {
       "get": {
-        "summary": "Get Concrete",
-        "operationId": "get_concrete_content_details__get",
+        "summary": "Get Content Translations",
+        "operationId": "get_content_translations_content_translations__get",
+        "description": "Get all translations by link or id",
         "parameters": [
           {
             "required": false,
@@ -138,53 +170,8 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/content/translations/": {
-      "get": {
-        "summary": "Get Content Translations",
-        "operationId": "get_content_translations_content_translations__get",
-        "parameters": [
-          {
-            "required": false,
-            "schema": {
-              "title": "Url",
-              "type": "string"
-            },
-            "name": "url",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/Translations"
                 }
               }
             }
@@ -196,6 +183,7 @@
       "get": {
         "summary": "Get Movie Videos",
         "operationId": "get_movie_videos_content_movie_videos__get",
+        "description": "Get video file url by link or id",
         "parameters": [
           {
             "required": false,
@@ -204,6 +192,15 @@
               "type": "string"
             },
             "name": "url",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            },
+            "name": "id",
             "in": "query"
           },
           {
@@ -222,16 +219,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
@@ -268,16 +255,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
@@ -332,16 +309,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
               }
             }
           }
@@ -400,16 +367,6 @@
                 "schema": {}
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
         }
       }
@@ -417,42 +374,185 @@
   },
   "components": {
     "schemas": {
-      "HTTPValidationError": {
-        "title": "HTTPValidationError",
+      "Search": {
+        "title": "Search",
         "type": "object",
         "properties": {
-          "detail": {
-            "title": "Detail",
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "example": 2136
+          },
+          "type": {
+            "title": "Type",
+            "type": "string",
+            "example": "Мультфильм"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "example": "Рик и Морти"
+          },
+          "mirrorLessUrl": {
+            "title": "Mirror Less Url",
+            "type": "string",
+            "example": "http://rd8j1em1zxge.org/cartoons/comedy/2136-rik-i-morti-2013.html"
+          },
+          "imageUrl": {
+            "title": "Image Url",
+            "type": "string",
+            "example": "http://static.rezka.cloud/i/2022/8/24/f6275fb49917bza68n61e.jpg"
+          },
+          "year": {
+            "title": "Year",
+            "type": "string",
+            "example": "2013 - ..."
+          },
+          "country": {
+            "title": "Country",
+            "type": "string",
+            "example": "США"
+          },
+          "genre": {
+            "title": "Genre",
+            "type": "string",
+            "example": "Комедии"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string",
+            "nullable": true,
+            "example": "6 сезон, 9 серия"
+          }
+        }
+      },
+      "Concrete": {
+        "title": "Concrete",
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer",
+            "example": 2136
+          },
+          "url": {
+            "title": "Mirror Less Url",
+            "type": "string",
+            "example": "http://rd8j1em1zxge.org/cartoons/comedy/2136-rik-i-morti-2013.html"
+          },
+          "type": {
+            "title": "type",
+            "type": "string",
+            "example": "tv_series"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string",
+            "example": "Рик и Морти"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "example": "Сюжет повествует о безудержных приключениях гениального ученого, страдающего от алкогольной зависимости Рика Санчеза и его наивного..."
+          },
+          "imageUrl": {
+            "title": "Image url",
+            "type": "string",
+            "example": "http://static.rezka.cloud/i/2022/8/24/zb04639f399efcl66z13b.png"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "rating": {
+                "description": "Rating IMDB or Kinopoisk",
+                "type": "string",
+                "example": "IMDb: 9.1 (520 400) Кинопоиск: 9.00 (771 737)"
+              },
+              "slogan": {
+                "description": "Slogan",
+                "type": "string",
+                "example": "Зачем семья, когда есть наука?"
+              },
+              "release": {
+                "description": "Release date",
+                "type": "string",
+                "example": "2 декабря 2013 года"
+              },
+              "country": {
+                "description": "Country of production",
+                "type": "string",
+                "example": "США"
+              },
+              "director": {
+                "description": "Director",
+                "type": "string",
+                "example": "Уэсли Арчер, Пит Мишелс, Johnny Tesoro, Nathan Litz"
+              },
+              "genre": {
+                "description": "Genre",
+                "type": "string",
+                "example": "Комедии, Фантастика, Приключения, Для взрослых, Мультсериалы, Зарубежные"
+              },
+              "quality": {
+                "description": "Quality",
+                "type": "string",
+                "example": "720p"
+              },
+              "age": {
+                "description": "Age limit",
+                "type": "string",
+                "example": "18+ только для взрослых"
+              },
+              "time": {
+                "description": "Time of the episode",
+                "type": "string",
+                "example": "00:22"
+              },
+              "actors": {
+                "description": "Actors",
+                "type": "string",
+                "example": "Джастин Ройланд, Крис Парнелл, Спенсер Грэммер, Сара Чок, Кари Уолгрен, Дэн Хармон, Морис ЛаМарш, Том Кенни, Брэндон Джонсон, Райан Ридли"
+              }
+            }
+          },
+          "translations_id": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ValidationError"
+              "$ref": "#/components/schemas/ConcreteTranslation"
             }
           }
         }
       },
-      "ValidationError": {
-        "title": "ValidationError",
+      "ConcreteTranslation": {
         "required": [
-          "loc",
-          "msg",
-          "type"
+          "country"
         ],
         "type": "object",
         "properties": {
-          "loc": {
-            "title": "Location",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+          "name": {
+            "type": "string",
+            "example": "HDrezka Studio"
           },
-          "msg": {
-            "title": "Message",
-            "type": "string"
+          "id": {
+            "type": "string",
+            "example": "111"
+          }
+        }
+      },
+      "Translations": {
+        "type": "object",
+        "properties": {
+          "HDrezka Studio":{
+            "type": "string",
+            "example": 111
           },
-          "type": {
-            "title": "Error Type",
-            "type": "string"
+          "TVShows":{
+            "type": "string",
+            "example": 232
+          },
+          "GurGurStudio":{
+            "type": "string",
+            "example": 465
           }
         }
       }
