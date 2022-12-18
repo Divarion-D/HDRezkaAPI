@@ -13,9 +13,9 @@
   "paths": {
     "/content/search/": {
       "get": {
-        "summary": "Search",
+        "summary": "Поиск",
         "operationId": "search_content_search__get",
-        "description": "Search by name",
+        "description": "Поиск по названию",
         "parameters": [
           {
             "required": true,
@@ -45,7 +45,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Search"
+                    "$ref": "#/components/schemas/Data"
                   }
                 }
               }
@@ -56,7 +56,7 @@
     },
     "/content/details/": {
       "get": {
-        "summary": "Get Concrete",
+        "summary": "Get Concrete Details",
         "operationId": "get_concrete_content_details__get",
         "description": "Get detailed information by link or id",
         "parameters": [
@@ -109,20 +109,40 @@
           },
           {
             "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Sort by",
             "schema": {
               "title": "Filter",
               "type": "string",
-              "default": "last"
+              "default": "last",
+              "enum": [
+                "last",
+                "popular",
+                "soon",
+                "watching"
+              ]
+
             },
             "name": "filter",
             "in": "query"
           },
           {
             "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Type of content",
             "schema": {
               "title": "Type",
               "type": "string",
-              "default": "all"
+              "default": "all",
+              "enum": [
+                "all",
+                "film",
+                "series",
+                "cartoon",
+                "anime"
+              ]
             },
             "name": "type",
             "in": "query"
@@ -133,7 +153,12 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Data"
+                  }
+                }
               }
             }
           }
@@ -218,7 +243,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/MediaFile"
+                }
               }
             }
           }
@@ -227,11 +254,11 @@
     },
     "/content/tv_series/seasons/": {
       "get": {
-        "summary": "Get Tv Series Seasons",
+        "summary": "Получить список сезонов сериала и эпизодов в озвучке",
         "operationId": "get_tv_series_seasons_content_tv_series_seasons__get",
         "parameters": [
           {
-            "required": true,
+            "required": false,
             "schema": {
               "title": "Url",
               "type": "string"
@@ -241,6 +268,16 @@
           },
           {
             "required": false,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            },
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "description": "Если параметр не указан, то возвращаются все озвучки",
             "schema": {
               "title": "Translation Id",
               "type": "string"
@@ -254,7 +291,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/Seasons"
+                }
               }
             }
           }
@@ -374,8 +413,8 @@
   },
   "components": {
     "schemas": {
-      "Search": {
-        "title": "Search",
+      "Data": {
+        "title": "Data",
         "type": "object",
         "properties": {
           "id": {
@@ -553,6 +592,97 @@
           "GurGurStudio":{
             "type": "string",
             "example": 465
+          }
+        }
+      },
+      "MediaFile": {
+        "type": "object",
+        "properties": {
+          "360p": {
+            "type": "string",
+            "example": "http://stream.voidboost.cc/c7c55df3dc7219a95caca03d76f75ca2:2022121917:bmQxb0dXWmc3UW0wdW56U2t0M1U5MUVNMnZselpiVDFzNmJqMkVpcnlhYlQwSDNtQzk4YllzdFl0WTBvZW9sUENPQ0xIT3FRUDBDb2EzMU9pcDFWNzFHQTNnWGJ5dVpLcFZtL2pQZUVZSEk9/2/8/8/8/2/7/i6bxh.mp4"
+          },
+          "480p": {
+            "type": "string",
+            "example": "http://stream.voidboost.cc/926194b14fc6465039e1d7bb6d426355:2022121917:bmQxb0dXWmc3UW0wdW56U2t0M1U5MUVNMnZselpiVDFzNmJqMkVpcnlhYlQwSDNtQzk4YllzdFl0WTBvZW9sUENPQ0xIT3FRUDBDb2EzMU9pcDFWNzFHQTNnWGJ5dVpLcFZtL2pQZUVZSEk9/2/8/8/8/2/7/8o8h0.mp4"
+          },
+          "720p": {
+            "type": "string",
+            "example": "http://stream.voidboost.cc/63ecf4aa37df94ad52e683f6fde79be2:2022121917:bmQxb0dXWmc3UW0wdW56U2t0M1U5MUVNMnZselpiVDFzNmJqMkVpcnlhYlQwSDNtQzk4YllzdFl0WTBvZW9sUENPQ0xIT3FRUDBDb2EzMU9pcDFWNzFHQTNnWGJ5dVpLcFZtL2pQZUVZSEk9/2/8/8/8/2/7/3y70d.mp4"
+          },
+          "1080p": {
+            "type": "string",
+            "example": "http://stream.voidboost.cc/51dc4d2beebbcc5ba1d29b381e60929d:2022121917:bmQxb0dXWmc3UW0wdW56U2t0M1U5MUVNMnZselpiVDFzNmJqMkVpcnlhYlQwSDNtQzk4YllzdFl0WTBvZW9sUENPQ0xIT3FRUDBDb2EzMU9pcDFWNzFHQTNnWGJ5dVpLcFZtL2pQZUVZSEk9/2/8/8/8/2/7/129el.mp4"
+          },
+          "1080p Ultra": {
+            "type": "string",
+            "example": "http://stream.voidboost.cc/51dc4d2beebbcc5ba1d29b381e60929d:2022121917:bmQxb0dXWmc3UW0wdW56U2t0M1U5MUVNMnZselpiVDFzNmJqMkVpcnlhYlQwSDNtQzk4YllzdFl0WTBvZW9sUENPQ0xIT3FRUDBDb2EzMU9pcDFWNzFHQTNnWGJ5dVpLcFZtL2pQZUVZSEk9/2/8/8/8/2/7/129el.mp4"
+          }
+        }
+      },
+      "Seasons": {
+        "type": "object",
+        "properties": {
+          "HDrezka Studio": {
+            "type": "object",
+            "properties": {
+              "translator_id": {
+                "type": "string",
+                "example": "111"
+              },
+              "seasons": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string",
+                    "example": "Сезон 1"
+                  },
+                  "2": {
+                    "type": "string",
+                    "example": "Сезон 2"
+                  }
+                }
+              },
+              "episodes": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "string",
+                        "example": "Серия 1"
+                      },
+                      "2": {
+                        "type": "string",
+                        "example": "Серия 2"
+                      },
+                      "3": {
+                        "type": "string",
+                        "example": "Серия 3"
+                      }
+                    }
+                  },
+                  "2": {
+                    "type": "object",
+                    "properties": {
+                      "1": {
+                        "type": "string",
+                        "example": "Серия 1"
+                      },
+                      "2": {
+                        "type": "string",
+                        "example": "Серия 2"
+                      },
+                      "3": {
+                        "type": "string",
+                        "example": "Серия 3"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }

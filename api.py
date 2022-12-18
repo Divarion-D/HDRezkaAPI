@@ -80,8 +80,17 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
 
 
 @app.get("/content/tv_series/seasons/")
-async def get_tv_series_seasons(url: str, translation_id: str = None):
-    api: HdRezkaApi = HdRezkaApi(url)
+async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+    if url is None and id is None:
+        return {"error": "url or id is required"}
+    elif url is not None and id is None:
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+    elif url is None and id is not None:
+        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+    else:
+        return {"error": "url and id cannot be used together"}
+
     return api.getSeasons(translator_id=translation_id)
 
 
