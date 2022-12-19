@@ -39,15 +39,6 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return {"error": "url and id cannot be used together"}
 
 
-@app.get("/content/page/{page}")
-async def get_content(page: int, filter: str = "last", type: str = "all"):
-    mirror = HDREZKA_URL
-    url: str = create_url(page, filter, type, mirror)
-    print(url)
-    parser: HdRezkaParser = HdRezkaParser(url)
-    return parser.get_content_list(mirror)
-
-
 @app.get("/content/translations/")
 async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
@@ -95,11 +86,21 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
 
 
 @app.get("/content/tv_series/videos/")
-async def get_tv_series_videos(url: str, translation_id: str, season_id: str, series_id: str):
+async def get_tv_series_videos(season_id: str, series_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     stream = api.getStream(translation=translation_id,
                            season=season_id, episode=series_id)
     return stream.videos
+
+
+@app.get("/content/page/{page}")
+async def get_content(page: int, filter: str = "last", type: str = "all"):
+    mirror = HDREZKA_URL
+    url: str = create_url(page, filter, type, mirror)
+    print(url)
+    parser: HdRezkaParser = HdRezkaParser(url)
+    return parser.get_content_list(mirror)
+
 
 
 @app.get("/content/category/page/{page}")

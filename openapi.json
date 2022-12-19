@@ -93,78 +93,6 @@
         }
       }
     },
-    "/content/page/{page}": {
-      "get": {
-        "summary": "Get Content",
-        "operationId": "get_content_content_page__page__get",
-        "parameters": [
-          {
-            "required": true,
-            "schema": {
-              "title": "Page",
-              "type": "integer"
-            },
-            "name": "page",
-            "in": "path"
-          },
-          {
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "description": "Sort by",
-            "schema": {
-              "title": "Filter",
-              "type": "string",
-              "default": "last",
-              "enum": [
-                "last",
-                "popular",
-                "soon",
-                "watching"
-              ]
-
-            },
-            "name": "filter",
-            "in": "query"
-          },
-          {
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "description": "Type of content",
-            "schema": {
-              "title": "Type",
-              "type": "string",
-              "default": "all",
-              "enum": [
-                "all",
-                "film",
-                "series",
-                "cartoon",
-                "anime"
-              ]
-            },
-            "name": "type",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Data"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/content/translations/": {
       "get": {
         "summary": "Get Content Translations",
@@ -304,9 +232,9 @@
       "get": {
         "summary": "Get Tv Series Videos",
         "operationId": "get_tv_series_videos_content_tv_series_videos__get",
+        "description": "Получить ссылку на видеофайл сериала по ссылке или id",
         "parameters": [
           {
-            "required": true,
             "schema": {
               "title": "Url",
               "type": "string"
@@ -315,7 +243,14 @@
             "in": "query"
           },
           {
-            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string"
+            },
+            "name": "id",
+            "in": "query"
+          },
+          {
             "schema": {
               "title": "Translation Id",
               "type": "string"
@@ -347,7 +282,81 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/MediaFile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/content/page/{page}": {
+      "get": {
+        "summary": "Get Content",
+        "operationId": "get_content_content_page__page__get",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Page",
+              "type": "integer"
+            },
+            "name": "page",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Sort by",
+            "schema": {
+              "title": "Filter",
+              "type": "string",
+              "default": "last",
+              "enum": [
+                "last",
+                "popular",
+                "soon",
+                "watching"
+              ]
+
+            },
+            "name": "filter",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "description": "Type of content",
+            "schema": {
+              "title": "Type",
+              "type": "string",
+              "default": "all",
+              "enum": [
+                "all",
+                "film",
+                "series",
+                "cartoon",
+                "anime"
+              ]
+            },
+            "name": "type",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Data"
+                  }
+                }
               }
             }
           }
@@ -373,7 +382,13 @@
             "schema": {
               "title": "Type",
               "type": "string",
-              "default": "films"
+              "default": "films",
+              "enum": [
+                "films",
+                "series",
+                "cartoons",
+                "animation"
+              ]
             },
             "name": "type",
             "in": "query"
@@ -403,7 +418,12 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Data"
+                  }
+                }
               }
             }
           }
