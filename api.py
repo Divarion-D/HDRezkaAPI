@@ -143,5 +143,5 @@ class ContentType(enum.Enum):
 
 if __name__ == "__main__":
     ip = input("Enter ip: ")
-    port = input("Enter port: ")
+    port = int(input("Enter port: "))
     uvicorn.run("api:app", host=ip, port=port, debug=True, reload=True)
