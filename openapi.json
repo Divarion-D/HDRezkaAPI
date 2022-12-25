@@ -56,9 +56,9 @@
     },
     "/content/details/": {
       "get": {
-        "summary": "Get Concrete Details",
+        "summary": "Получить конкретную информацию",
         "operationId": "get_concrete_content_details__get",
-        "description": "Get detailed information by link or id",
+        "description": "Получить подробную информацию по ссылке или идентификатору",
         "parameters": [
           {
             "required": false,
@@ -95,9 +95,9 @@
     },
     "/content/translations/": {
       "get": {
-        "summary": "Get Content Translations",
+        "summary": "Получить список переводов",
         "operationId": "get_content_translations_content_translations__get",
-        "description": "Get all translations by link or id",
+        "description": "Получить все переводы по ссылке или идентификатору",
         "parameters": [
           {
             "required": false,
@@ -134,9 +134,9 @@
     },
     "/content/movie/videos/": {
       "get": {
-        "summary": "Get Movie Videos",
+        "summary": "Получить список видео файлов",
         "operationId": "get_movie_videos_content_movie_videos__get",
-        "description": "Get video file url by link or id",
+        "description": "Получить URL-адрес видеофайла по ссылке или идентификатору",
         "parameters": [
           {
             "required": false,
@@ -230,9 +230,9 @@
     },
     "/content/tv_series/videos/": {
       "get": {
-        "summary": "Get Tv Series Videos",
+        "summary": "Получит видео файлы для сериала",
         "operationId": "get_tv_series_videos_content_tv_series_videos__get",
-        "description": "Получить ссылку на видеофайл сериала по ссылке или id",
+        "description": "Получить ссылку на видеофайл сериала по ссылке или идентификатору",
         "parameters": [
           {
             "schema": {
@@ -293,7 +293,7 @@
     },
     "/content/page/{page}": {
       "get": {
-        "summary": "Get Content",
+        "summary": "Получит контент на странице",
         "operationId": "get_content_content_page__page__get",
         "parameters": [
           {
@@ -309,7 +309,7 @@
             "required": false,
             "style": "form",
             "explode": true,
-            "description": "Sort by",
+            "description": "Сортировка по",
             "schema": {
               "title": "Filter",
               "type": "string",
@@ -329,7 +329,7 @@
             "required": false,
             "style": "form",
             "explode": true,
-            "description": "Type of content",
+            "description": "Тип контента",
             "schema": {
               "title": "Type",
               "type": "string",
@@ -365,7 +365,7 @@
     },
     "/content/category/page/{page}": {
       "get": {
-        "summary": "Get Content By Categories",
+        "summary": "Получит контент по категории на странице",
         "operationId": "get_content_by_categories_content_category_page__page__get",
         "parameters": [
           {
