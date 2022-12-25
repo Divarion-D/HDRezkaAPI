@@ -4,8 +4,8 @@ from typing import Union
 from hd_rezka_parser import HdRezkaParser
 from hd_rezka_api import HdRezkaApi
 import enum
-import socket
 import json
+import sys
 
 app = FastAPI()
 
@@ -141,27 +141,7 @@ class ContentType(enum.Enum):
     anime = 82
 
 
-class ContentGenre(enum.Enum):
-    any = 1
-    drama = 2
-    comedy = 3
-    crime = 4
-    detective = 5
-    action = 6
-    adventures = 7
-    fantasy = 8
-    melodrama = 9
-    western = 10
-    fiction = 11
-    horror = 12
-    musical = 13
-    military = 14
-    documentary = 15
-    erotic = 16
-    cognitive = 17
-    arthouse = 18
-
-
 if __name__ == "__main__":
-    ip = socket.gethostbyname(socket.gethostname())
-    uvicorn.run("api:app", host=ip, port=8000, debug=True, reload=True)
+    ip = input("Enter ip: ")
+    port = input("Enter port: ")
+    uvicorn.run("api:app", host=ip, port=port, debug=True, reload=True)
