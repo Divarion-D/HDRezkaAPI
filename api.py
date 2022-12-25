@@ -32,7 +32,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         return HdRezkaParser.get_concrete_content_info(url)
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
         return HdRezkaParser.get_concrete_content_info(url)
     else:
@@ -45,7 +45,7 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
@@ -60,7 +60,7 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
@@ -76,7 +76,7 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
