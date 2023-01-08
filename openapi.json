@@ -273,7 +273,7 @@
               "title": "Series Id",
               "type": "string"
             },
-            "name": "series_id",
+            "name": "episode_id",
             "in": "query"
           }
         ],

@@ -1,10 +1,14 @@
 import sys
-from os import path
-from bs4 import BeautifulSoup
-from .request import Request
-from .get_stream import GetStream
+import os
+import requests
 from tqdm import tqdm
 
+HEADERS = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/103.0.0.0 Safari/537.36 '
+        }
+
+API_URL = "http://127.0.1.1:8000/"
 
 class Error(Exception):
     """Base class for other exceptions"""
@@ -22,119 +26,61 @@ class EpisodeNumberIsOutOfRange(Error):
 
 
 class Download:
-    def __init__(self, download_data):
-        self.data = download_data
-        self.url = download_data['url']
-        response = Request().get(self.url)
-        self.soup = BeautifulSoup(response.content, 'html.parser')
-        self.favs = self.soup.find('input', id='ctrl_favs').get('value')
+    def __init__(self):
+        search_title = input("Введите название: ")
 
-    def download_season(self, season):
-        if season < 1 or season > self.data['seasons_count']:
-            # TODO Make new custom exception for incorrect season number and realize it
-            return
+        search_request = requests.get(API_URL + f"content/search/?query={search_title}&page=1").json()
+        for i in range(len(search_request)):
+            print(f"{i} - {search_request[i]['title']}")
+        series_id = int(input("Введите номер: "))
+        self.url = search_request[series_id]["mirrorLessUrl"]
+        self.title = search_request[series_id]["title"]
 
-        episodes_list = self.soup.find(
-            'ul', id=f'simple-episodes-list-{season}')
-        episodes_count = len(episodes_list.findAll('li'))
+        detail_info_request = requests.get(API_URL + f"content/details/?url={self.url}").json()
 
-        if self.data['translations_list']:
-            translator_id = self.__get_translation()
-        else:
-            translator_id = self.__detect_translation()
+        for i in range(len(detail_info_request["translations_id"])):
+            print(f"{i} - {detail_info_request['translations_id'][i]['name']}")
+        translation_id = int(input("Введите номер: "))
+        translation_id = detail_info_request["translations_id"][translation_id]["id"]
+        
+        print ("1: Скачать сезон")
+        print ("2: Скачать серию")
+        print ("3: Скачать фильм")
+        var_download = input("Выберите действие: ")
+        var_download = "1"
+        if var_download == "1":
+            season_id = input("Введите номер сезона: ")
+            self.Download_Season(season_id, translation_id)
 
-        for i in range(1, episodes_count + 1):
-            self.download_episode(season, i, translator_id, True)
+    
+    def Download_Season(self, season_id, translation_id):
+        # get series list
+        series_list = requests.get(API_URL + f"content/tv_series/seasons/?url={self.url}&translation_id={translation_id}").json()
+        for i in range(1, len(series_list["episodes"][str(season_id)])+1):
+            episode_source = requests.get(API_URL + f"content/tv_series/videos/?url={self.url}&translation_id={translation_id}&season_id={season_id}&episode_id={i}").json()
+            file_name = f"{self.title} - {season_id}s{i}e.mp4"
 
-    def download_episodes(self, season, start, end):
-        if season < 1 or season > self.data['seasons_count']:
-            # TODO Make new custom exception for incorrect season number and realize it
-            return
+            download_data = {
+                'stream_url': episode_source['360p'],
+                'file_name': file_name,
+                'title': self.title
+            }
 
-        episodes_list = self.soup.find(
-            'ul', id=f'simple-episodes-list-{season}')
-        episodes_count = len(episodes_list.findAll('li'))
+            self.__download(download_data)
 
-        if end > episodes_count or start < 0:
-            raise EpisodeNumberIsOutOfRange
-
-        if self.data['translations_list']:
-            translator_id = self.__get_translation()
-        else:
-            translator_id = self.__detect_translation()
-
-        for i in range(start, end + 1):
-            self.download_episode(season, i, translator_id, True)
-
-    def download_episode(self, season, episode, translator_id=None, multi_download=False):
-        if self.data['type'] == 'movie':
-            return
-        if season > self.data['seasons_count']:
-            return
-
-        if not multi_download:
-            if self.data['translations_list']:
-                translator_id = self.__get_translation()
-            else:
-                translator_id = self.__detect_translation()
-
-        if episode < 1 or episode > self.data['seasons_episodes_count'][season]:
-            raise IncorrectEpisodeNumberException
-
-        data = {
-            'id': self.data['data-id'],
-            'translator_id': translator_id,
-            'favs': self.favs,
-            'season': season,
-            'episode': episode,
-            'action': 'get_stream'
-        }
-
-        stream_url = GetStream().get_series_stream(data)
-        file_name = f"{self.data['name']} {season}s{episode}e.mp4"
-
-        download_data = {
-            'stream_url': stream_url,
-            'file_name': file_name,
-        }
-
-        self.__download(download_data)
-
-    def download_movie(self):
-        if self.data['type'] == 'series':
-            return
-
-        if self.data['translations_list']:
-            translator_id = self.__get_translation()
-        else:
-            translator_id = self.__detect_translation()
-
-        data = {
-            'id': self.data['data-id'],
-            'translator_id': translator_id,
-            'favs': self.favs,
-            'action': 'get_movie'
-        }
-
-        stream_url = GetStream().get_movie_stream(data)
-        # file_name = f"{self.data['name']}.mp4"
-        # TODO Fix file name bug
-        file_name = "test.mp4"
-
-        download_data = {
-            'stream_url': stream_url,
-            'file_name': file_name,
-        }
-
-        self.__download(download_data)
 
     @staticmethod
     def __download(download_data):
         if download_data['stream_url']:
 
-            fullpath = path.join(path.curdir, download_data['file_name'])
+            fullpath = os.path.join(os.path.curdir, 'temp', download_data["title"], download_data['file_name'])
+            # remove symbols from fullpath
+            fullpath = fullpath.replace(":", "")
 
-            with Request().get(download_data['stream_url'], stream=True) as r, open(fullpath, "wb") as f, tqdm(
+            if not os.path.exists(os.path.dirname(fullpath)):
+                os.makedirs(os.path.dirname(fullpath))
+
+            with requests.get(url=download_data['stream_url'], stream=True, headers=HEADERS) as r, open(fullpath, "wb") as f, tqdm(
                     unit="B",
                     unit_scale=True,
                     unit_divisor=1024,
@@ -147,18 +93,6 @@ class Download:
                         datasize = f.write(chunk)
                         progress.update(datasize)
 
-    def __get_translation(self) -> int:
-        for i, translation in zip(range(1, len(self.data['translations_list'])), self.data['translations_list']):
-            print(f'{i} - {translation["name"]}')
-        return self.data['translations_list'][
-            int(input("Введите номер озвучки: ")) - 1
-        ]['id']
 
-    def __detect_translation(self):
-        if self.data['type'] == 'movie':
-            event_type = 'initCDNMoviesEvents'
-        else:
-            event_type = 'initCDNSeriesEvents'
-
-        tmp = str(self.soup).split(f"sof.tv.{event_type}")[-1].split("{")[0]
-        return tmp.split(",")[1].strip()
+if __name__ == "__main__":
+    Download()

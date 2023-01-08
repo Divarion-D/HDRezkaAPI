@@ -116,7 +116,13 @@ class HdRezkaApi():
             trashString = trashString.replace(temp, '')
 
         finalString = base64.b64decode(f"{trashString}==")
-        return finalString.decode("utf-8")
+
+        try:
+            print(1)
+            return finalString.decode("utf-8")
+        except UnicodeDecodeError:
+            print(2)
+            return finalString.decode("cp1251")
 
     def getTranslations(self):
         arr = {}

@@ -86,10 +86,10 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
 
 
 @app.get("/content/tv_series/videos/")
-async def get_tv_series_videos(season_id: str, series_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     stream = api.getStream(translation=translation_id,
-                           season=season_id, episode=series_id)
+                           season=season_id, episode=episode_id)
     return stream.videos
 
 
@@ -142,6 +142,10 @@ class ContentType(enum.Enum):
 
 
 if __name__ == "__main__":
-    ip = input("Enter ip: ")
-    port = int(input("Enter port: "))
-    uvicorn.run("api:app", host=ip, port=port, debug=True, reload=True)
+    ip = input("Enter ip (default: 127.0.1.1): ")
+    port = input("Enter port (default: 8000): ")
+    if ip == "":
+        ip = "127.0.1.1"
+    if port == "":
+        port = "8000"
+    uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
