@@ -1,24 +1,28 @@
-from fastapi import FastAPI, Header
-import uvicorn
-from typing import Union
-from hd_rezka_parser import HdRezkaParser
-from hd_rezka_api import HdRezkaApi
 import enum
 import json
 import sys
+from typing import Union
+
+import uvicorn
+from fastapi import FastAPI, Header
+
+from hd_rezka_api import HdRezkaApi
+from hd_rezka_parser import HdRezkaParser
 
 app = FastAPI()
 
 HDREZKA_URL = "http://rd8j1em1zxge.org/"
 
+
 def custom_openapi():
     with open("openapi.json", "r") as openapi:
         return json.load(openapi)
 
+
 app.openapi = custom_openapi
 
 
-@app.get("/content/search/")
+@app.get("/content/search")
 async def search(query: str, page: int = 1):
     mirror = HDREZKA_URL
     search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
@@ -26,7 +30,7 @@ async def search(query: str, page: int = 1):
     return parser.get_content_list(mirror)
 
 
-@app.get("/content/details/")
+@app.get("/content/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -39,7 +43,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return {"error": "url and id cannot be used together"}
 
 
-@app.get("/content/translations/")
+@app.get("/content/translations")
 async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -54,7 +58,7 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
     return api.getTranslations()
 
 
-@app.get("/content/movie/videos/")
+@app.get("/content/movie/videos")
 async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -70,7 +74,7 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
     return stream.videos
 
 
-@app.get("/content/tv_series/seasons/")
+@app.get("/content/tv_series/seasons")
 async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -85,7 +89,7 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
     return api.getSeasons(translator_id=translation_id)
 
 
-@app.get("/content/tv_series/videos/")
+@app.get("/content/tv_series/videos")
 async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     stream = api.getStream(translation=translation_id,
@@ -95,26 +99,28 @@ async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, 
 
 @app.get("/content/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
-    mirror = HDREZKA_URL
-    url: str = create_url(page, filter, type, mirror)
-    print(url)
+    url: str = create_url(page, filter, type, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
-    return parser.get_content_list(mirror)
+    return parser.get_content_list(HDREZKA_URL)
 
+
+@app.get("/content/genres")
+async def get_genres(type: str = "films"):
+    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL)
+    return parser.get_genres(type)
 
 
 @app.get("/content/category/page/{page}")
 async def get_content_by_categories(page: int = 1, type: str = "films", genre: str = "any", year: int = None):
-    mirror = HDREZKA_URL
-    url = create_categories_url(page, type, genre, year, mirror)
+    url = create_categories_url(page, type, genre, year, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
-    return parser.get_content_list(mirror)
+    return parser.get_content_list(HDREZKA_URL)
 
 
 def create_url(page: int, filter: str, type: str, mirror: str):
     genre_index: int = ContentType[f"{type}"].value
     url = mirror
-    if(page != 1):
+    if (page != 1):
         url += f"/page/{page}/"
     url += f"?filter={filter}"
     if genre_index != 0:

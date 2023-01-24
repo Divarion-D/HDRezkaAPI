@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup as BS
 import requests
+from bs4 import BeautifulSoup as BS
 from requests_html import HTMLSession
 
 
@@ -21,6 +21,28 @@ class HdRezkaParser:
             map(lambda content: self.get_content_info(content, mirror), content_list))
 
         return content_list
+
+    def get_genres(self, types):
+        session = HTMLSession()
+        resp = session.get(self.url, headers=self.headers)
+        html = BS(resp.html.html, "html.parser")
+        session.close()
+        genres = html.find_all("ul", class_="left")
+        genres = list(map(lambda genre: genre.find_all("a"), genres))
+        # Search for genres in types
+        genres_out = []
+        types_url = f"/{types}/"
+        for i in range(len(genres)):
+            for j in range(len(genres[i])):
+                if genres[i][j].attrs["href"].find(types_url) != -1:
+                    genres_out.append(
+                        {
+                            "name": genres[i][j].text,
+                            "name_en":  genres[i][j].attrs["href"].replace(types_url, "").replace("/", ""),
+                            "url": genres[i][j].attrs["href"]
+                        }
+                    )
+        return genres_out
 
     @staticmethod
     def get_content_info(content, mirror):
@@ -77,14 +99,14 @@ class HdRezkaParser:
         table_body = table.find("tbody")
         rows = table_body.find_all('tr')
         rows = table_body.find_all('tr')
-        
+
         data = {}
         for row in rows[:-1]:
             cols = row.find_all('td')
             cols = [ele.text.strip() for ele in cols]
             data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
 
-        # convert time 
+        # convert time
         time = data.get("time")
         if time is not None:
             time = time.replace(" мин.", "")
@@ -105,7 +127,7 @@ class HdRezkaParser:
         content_info["data"] = data
 
         content_info["translations_id"] = []
-        
+
         translations = html.find("ul", id="translators-list")
         if translations is not None:
             for translation in translations.find_all("li"):

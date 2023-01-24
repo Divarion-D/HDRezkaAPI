@@ -1,7 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
 import base64
 from itertools import product
+
+import requests
+from bs4 import BeautifulSoup
 
 
 class HdRezkaStreamSubtitles():
