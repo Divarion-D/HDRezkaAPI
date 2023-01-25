@@ -24,10 +24,9 @@ app.openapi = custom_openapi
 
 @app.get("/content/search")
 async def search(query: str, page: int = 1):
-    mirror = HDREZKA_URL
-    search_url: str = f"{mirror}search/?do=search&subaction=search&q={query}&page={page}"
+    search_url: str = f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
     parser: HdRezkaParser = HdRezkaParser(search_url)
-    return parser.get_content_list(mirror)
+    return parser.get_content_list()
 
 
 @app.get("/content/details")
@@ -101,7 +100,7 @@ async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, 
 async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
-    return parser.get_content_list(HDREZKA_URL)
+    return parser.get_content_list()
 
 
 @app.get("/content/genres")
@@ -114,7 +113,7 @@ async def get_genres(type: str = "films"):
 async def get_content_by_categories(page: int = 1, type: str = "films", genre: str = "any", year: int = None):
     url = create_categories_url(page, type, genre, year, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
-    return parser.get_content_list(HDREZKA_URL)
+    return parser.get_content_list()
 
 
 def create_url(page: int, filter: str, type: str, mirror: str):

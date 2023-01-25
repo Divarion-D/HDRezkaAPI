@@ -9,16 +9,15 @@ class HdRezkaParser:
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
 
-    def get_content_list(self, mirror):
+    def get_content_list(self):
         session = HTMLSession()
         resp = session.get(self.url, headers=self.headers)
         html = BS(resp.html.html, "html.parser")
         session.close()
         content_list = html.find(
             "div", class_="b-content__inline_items").find_all("div", class_="b-content__inline_item")
-
         content_list = list(
-            map(lambda content: self.get_content_info(content, mirror), content_list))
+            map(lambda content: self.get_content_info(content), content_list))
 
         return content_list
 
@@ -45,7 +44,7 @@ class HdRezkaParser:
         return genres_out
 
     @staticmethod
-    def get_content_info(content, mirror):
+    def get_content_info(content):
         content_info = {
             "id": int(content.attrs["data-id"]),
             "type": content.find("i", class_="entity").text,
