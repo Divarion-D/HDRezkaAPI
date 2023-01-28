@@ -1,6 +1,6 @@
+import argparse
 import enum
 import json
-import sys
 from typing import Union
 
 import uvicorn
@@ -147,10 +147,15 @@ class ContentType(enum.Enum):
 
 
 if __name__ == "__main__":
-    ip = input("Enter ip (default: 127.0.1.1): ")
-    port = input("Enter port (default: 8000): ")
-    if ip == "":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-ip", help="ip address of the server")
+    parser.add_argument("-port", help="port of the server")
+    args = parser.parse_args()
+    ip = args.ip
+    port = args.port
+
+    if ip is None:
         ip = "127.0.1.1"
-    if port == "":
+    if port is None:
         port = "8000"
     uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
