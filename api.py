@@ -21,15 +21,18 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+@app.get("/")
+async def root():
+    return {"message": "no requests here"}
 
-@app.get("/content/search")
+@app.get("/search")
 async def search(query: str, page: int = 1):
     search_url: str = f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
     parser: HdRezkaParser = HdRezkaParser(search_url)
     return parser.get_content_list()
 
 
-@app.get("/content/details")
+@app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -42,7 +45,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return {"error": "url and id cannot be used together"}
 
 
-@app.get("/content/translations")
+@app.get("/translations")
 async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -57,7 +60,7 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
     return api.getTranslations()
 
 
-@app.get("/content/movie/videos")
+@app.get("/movie/videos")
 async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -73,7 +76,7 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
     return stream.videos
 
 
-@app.get("/content/tv_series/seasons")
+@app.get("/tv_series/seasons")
 async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     if url is None and id is None:
         return {"error": "url or id is required"}
@@ -88,7 +91,7 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
     return api.getSeasons(translator_id=translation_id)
 
 
-@app.get("/content/tv_series/videos")
+@app.get("/tv_series/videos")
 async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
     api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     stream = api.getStream(translation=translation_id,
@@ -96,20 +99,20 @@ async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, 
     return stream.videos
 
 
-@app.get("/content/page/{page}")
+@app.get("/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
     return parser.get_content_list()
 
 
-@app.get("/content/genres")
+@app.get("/genres")
 async def get_genres(type: str = "films"):
     parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL)
     return parser.get_genres(type)
 
 
-@app.get("/content/category/page/{page}")
+@app.get("/category/page/{page}")
 async def get_content_by_categories(page: int = 1, type: str = "films", genre: str = "any", year: int = None):
     url = create_categories_url(page, type, genre, year, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
