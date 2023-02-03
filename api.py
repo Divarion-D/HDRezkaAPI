@@ -11,7 +11,7 @@ from hd_rezka_parser import HdRezkaParser
 
 app = FastAPI()
 
-HDREZKA_URL = "http://rd8j1em1zxge.org/"
+HDREZKA_URL = "https://rezka.ag/"
 
 
 def custom_openapi():
@@ -40,6 +40,8 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return HdRezkaParser.get_concrete_content_info(url)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        if url == "error":
+            return {"error": "film id not found"}
         return HdRezkaParser.get_concrete_content_info(url)
     else:
         return {"error": "url and id cannot be used together"}
@@ -53,6 +55,8 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        if url == "error":
+            return {"error": "film id not found"}
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
         return {"error": "url and id cannot be used together"}
@@ -68,6 +72,8 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        if url == "error":
+            return {"error": "film id not found"}
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
         return {"error": "url and id cannot be used together"}
@@ -84,6 +90,8 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     elif url is None and id is not None:
         url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        if url == "error":
+            return {"error": "film id not found"}
         api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
     else:
         return {"error": "url and id cannot be used together"}

@@ -74,7 +74,13 @@ class HdRezkaParser:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
         r = requests.post(url, headers=headers, data=data)
         html = BS(r.content, "html5lib")
-        return html.find("div", class_="b-content__bubble_title").find("a").attrs["href"]
+        try:
+            return html.find("div", class_="b-content__bubble_title").find("a").attrs["href"]
+        except:
+            return "error"
+
+
+        
 
     @staticmethod
     def get_concrete_content_info(url):
