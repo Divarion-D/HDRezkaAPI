@@ -154,6 +154,7 @@ class DataAtribute:
             "В качестве": "quality",
             "Возраст": "age",
             "Время": "time",
+            "Год": "year",
             "Из серии": "is_series_bad",
             "В переводе": "translation",
             "В ролях актеры": "actors",

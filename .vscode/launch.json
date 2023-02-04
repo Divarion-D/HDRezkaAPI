@@ -1,12 +1,12 @@
 {
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Api",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/api.py",
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": true
         }
     ]
 }
