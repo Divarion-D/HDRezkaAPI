@@ -21,9 +21,11 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+
 @app.get("/")
 async def root():
     return {"message": "no requests here"}
+
 
 @app.get("/search")
 async def search(query: str, page: int = 1):
@@ -162,11 +164,10 @@ if __name__ == "__main__":
     parser.add_argument("-ip", help="ip address of the server")
     parser.add_argument("-port", help="port of the server")
     args = parser.parse_args()
-    ip = args.ip
-    port = args.port
 
-    if ip is None:
-        ip = "127.0.1.1"
-    if port is None:
-        port = "8000"
+    # set ip to argument, environment variable, or default value if none given
+    ip = args.ip or "0.0.0.0"
+    # set port to argument, environment variable, or default value if none given
+    port = args.port or "8000"
+    
     uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
