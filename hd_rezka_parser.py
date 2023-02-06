@@ -115,7 +115,10 @@ class HdRezkaParser:
         time = data.get("time")
         if time is not None:
             time = time.replace(" мин.", "")
-            hour, minute = divmod(int(time), 60)
+            if time.find(":") != -1:
+                hour, minute = time.split(":")
+            else:
+                hour, minute = divmod(int(time), 60)
             if hour < 10:
                 hour = f"0{str(hour)}"
             if minute < 10:

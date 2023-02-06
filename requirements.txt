@@ -1,6 +1,6 @@
-requests==2.25.1
-uvicorn==0.18.2
+beautifulsoup4==4.11.2
+fastapi==0.89.1
+requests==2.22.0
 requests_html==0.10.0
-beautifulsoup4==4.11.1
-fastapi==0.85.0
-html5lib
+tqdm==4.64.1
+uvicorn==0.13.3
