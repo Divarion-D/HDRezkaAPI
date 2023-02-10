@@ -8,6 +8,10 @@
 ```
 python3 api.py
 ```
+или
+```
+python3 api.py -ip 127.0.0.1 -port 8000
+```
 
 ### Обновление
 

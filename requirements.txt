@@ -4,3 +4,4 @@ requests==2.22.0
 requests_html==0.10.0
 tqdm==4.64.1
 uvicorn==0.13.3
+html5lib==1.1
