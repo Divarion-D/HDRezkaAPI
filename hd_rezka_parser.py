@@ -114,9 +114,12 @@ class HdRezkaParser:
         # convert time
         time = data.get("time")
         if time is not None:
-            time = time.replace(" мин.", "")
+            if time.find(" мин.") != -1:
+                time = time.replace(" мин.", "")
             if time.find(":") != -1:
                 hour, minute = time.split(":")
+                hour = int(hour)
+                minute = int(minute)
             else:
                 hour, minute = divmod(int(time), 60)
             if hour < 10:
