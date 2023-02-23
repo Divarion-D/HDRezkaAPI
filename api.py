@@ -11,7 +11,7 @@ from hd_rezka_parser import HdRezkaParser
 
 app = FastAPI()
 
-HDREZKA_URL = "https://rezka.ag/"
+HDREZKA_URL = "http://hdrezka.co/"
 
 
 def custom_openapi():
@@ -29,7 +29,9 @@ async def root():
 
 @app.get("/search")
 async def search(query: str, page: int = 1):
-    search_url: str = f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
+    search_url: str = (
+        f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
+    )
     parser: HdRezkaParser = HdRezkaParser(search_url)
     return parser.get_content_list()
 
@@ -50,7 +52,9 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
 
 
 @app.get("/translations")
-async def get_content_translations(url: Union[str, None] = None, id: Union[int, None] = None):
+async def get_content_translations(
+    url: Union[str, None] = None, id: Union[int, None] = None
+):
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
@@ -67,7 +71,11 @@ async def get_content_translations(url: Union[str, None] = None, id: Union[int, 
 
 
 @app.get("/movie/videos")
-async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+async def get_movie_videos(
+    url: Union[str, None] = None,
+    id: Union[int, None] = None,
+    translation_id: str = None,
+):
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
@@ -81,11 +89,20 @@ async def get_movie_videos(url: Union[str, None] = None, id: Union[int, None] = 
         return {"error": "url and id cannot be used together"}
 
     stream = api.getStream(translation=translation_id)
+
+    if type(stream) == dict:
+        if stream.get("error"):
+            return stream
+
     return stream.videos
 
 
 @app.get("/tv_series/seasons")
-async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+async def get_tv_series_seasons(
+    url: Union[str, None] = None,
+    id: Union[int, None] = None,
+    translation_id: str = None,
+):
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
@@ -102,10 +119,22 @@ async def get_tv_series_seasons(url: Union[str, None] = None, id: Union[int, Non
 
 
 @app.get("/tv_series/videos")
-async def get_tv_series_videos(season_id: str, episode_id: str, url: Union[str, None] = None, id: Union[int, None] = None, translation_id: str = None):
+async def get_tv_series_videos(
+    season_id: str,
+    episode_id: str,
+    url: Union[str, None] = None,
+    id: Union[int, None] = None,
+    translation_id: str = None,
+):
     api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
-    stream = api.getStream(translation=translation_id,
-                           season=season_id, episode=episode_id)
+    stream = api.getStream(
+        translation=translation_id, season=season_id, episode=episode_id
+    )
+
+    if type(stream) == dict:
+        if stream.get("error"):
+            return stream
+
     return stream.videos
 
 
@@ -123,7 +152,9 @@ async def get_genres(type: str = "films"):
 
 
 @app.get("/category/page/{page}")
-async def get_content_by_categories(page: int = 1, type: str = "films", genre: str = "any", year: int = None):
+async def get_content_by_categories(
+    page: int = 1, type: str = "films", genre: str = "any", year: int = None
+):
     url = create_categories_url(page, type, genre, year, HDREZKA_URL)
     parser: HdRezkaParser = HdRezkaParser(url)
     return parser.get_content_list()
@@ -132,7 +163,7 @@ async def get_content_by_categories(page: int = 1, type: str = "films", genre: s
 def create_url(page: int, filter: str, type: str, mirror: str):
     genre_index: int = ContentType[f"{type}"].value
     url = mirror
-    if (page != 1):
+    if page != 1:
         url += f"/page/{page}/"
     url += f"?filter={filter}"
     if genre_index != 0:
@@ -169,5 +200,5 @@ if __name__ == "__main__":
     ip = args.ip or "0.0.0.0"
     # set port to argument, environment variable, or default value if none given
     port = args.port or "8000"
-    
+
     uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
