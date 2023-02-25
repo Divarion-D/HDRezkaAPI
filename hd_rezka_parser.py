@@ -57,9 +57,9 @@ class HdRezkaParser:
         item_link = content.find(
             "div", class_="b-content__inline_item-link").find("div").text.split(',')
 
-        content_info["year"] = item_link[0].strip()
-        content_info["country"] = item_link[1].strip()
-        content_info["genre"] = item_link[2].strip()
+        # content_info["year"] = item_link[0].strip()
+        # content_info["country"] = item_link[1].strip()
+        # content_info["genre"] = item_link[2].strip()
 
         status = content.find("span", class_="info")
         content_info["status"] = None if status is None else status.text
