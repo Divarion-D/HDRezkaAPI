@@ -39,6 +39,14 @@ docker build -t hdrezka_api .
 docker run -d --name hdrezka_api --restart=always -p 8000:8000 hdrezka_api
 ```
 
+или
+    
+```
+docker stop hdrezka_api
+docker rm hdrezka_api
+docker pull divarion/hdrezka_api:master
+docker run -d --name hdrezka_api --restart=always -p 8000:8000 divarion/hdrezka_api:master
+```
 
 
 ## Документация
