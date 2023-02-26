@@ -32,7 +32,7 @@ async def search(query: str, page: int = 1):
     search_url: str = (
         f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
     )
-    parser: HdRezkaParser = HdRezkaParser(search_url)
+    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, search_url)
     return parser.get_content_list()
 
 
@@ -141,7 +141,7 @@ async def get_tv_series_videos(
 @app.get("/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, HDREZKA_URL)
-    parser: HdRezkaParser = HdRezkaParser(url)
+    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, url)
     return parser.get_content_list()
 
 
@@ -156,7 +156,7 @@ async def get_content_by_categories(
     page: int = 1, type: str = "films", genre: str = "any", year: int = None
 ):
     url = create_categories_url(page, type, genre, year, HDREZKA_URL)
-    parser: HdRezkaParser = HdRezkaParser(url)
+    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, url)
     return parser.get_content_list()
 
 
@@ -194,6 +194,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-ip", help="ip address of the server")
     parser.add_argument("-port", help="port of the server")
+
     args = parser.parse_args()
 
     # set ip to argument, environment variable, or default value if none given

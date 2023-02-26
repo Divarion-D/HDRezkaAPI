@@ -497,26 +497,25 @@
             "type": "string",
             "example": "http://static.rezka.cloud/i/2022/8/24/f6275fb49917bza68n61e.jpg"
           },
-          "year": {
-            "title": "Year",
+          "description": {
+            "title": "Description",
             "type": "string",
-            "example": "2013 - ..."
+            "example": "\u0421\u044E\u0436\u0435\u0442 \u043F\u043E\u0432\u0435\u0441\u0442\u0432\u0443\u0435\u0442 \u043E \u0431\u0435\u0437\u0443\u0434\u0435\u0440\u0436\u043D\u044B\u0445 \u043F\u0440\u0438\u043A\u043B\u044E\u0447\u0435\u043D\u0438\u044F\u0445 \u0433\u0435\u043D\u0438\u0430\u043B\u044C\u043D\u043E\u0433\u043E \u0443\u0447\u0435\u043D\u043E\u0433\u043E, \u0441\u0442\u0440\u0430\u0434\u0430\u044E\u0449\u0435\u0433\u043E \u043E\u0442 \u0430\u043B\u043A\u043E\u0433\u043E\u043B\u044C\u043D\u043E\u0439 \u0437\u0430\u0432\u0438\u0441\u0438\u043C\u043E\u0441\u0442\u0438 \u0420\u0438\u043A\u0430 \u0421\u0430\u043D\u0447\u0435\u0437\u0430 \u0438 \u0435\u0433\u043E \u043D\u0430\u0438\u0432\u043D\u043E\u0433\u043E, \u043D\u043E \u0438\u043D\u043E\u0433\u0434\u0430 \u0441\u043C\u0435\u043B\u043E\u0433\u043E 14-\u043B\u0435\u0442\u043D\u0435\u0433\u043E \u0432\u043D\u0443\u043A\u0430 \u041C\u043E\u0440\u0442\u0438 \u0421\u043C\u0438\u0442\u0430. \u041F\u043E\u0441\u043B\u0435 \u0442\u043E\u0433\u043E \u043A\u0430\u043A \u0441\u0442\u0430\u0440\u0438\u043A \u043F\u0435\u0440\u0435\u0431\u0440\u0430\u043B\u0441\u044F \u0436\u0438\u0442\u044C \u043A \u0411\u044D\u0442 \u0438 \u0414\u0436\u0435\u0440\u0440\u0438, \u0441\u0432\u043E\u0435\u0439 \u0434\u043E\u0447\u0435\u0440\u0438 \u0438 \u0437\u044F\u0442\u044E,..."
           },
-          "country": {
-            "title": "Country",
+          "age": {
+            "title": "Age",
             "type": "string",
-            "example": "\u0421\u0428\u0410"
+            "example": "18+"
           },
           "genre": {
             "title": "Genre",
             "type": "string",
             "example": "\u041a\u043e\u043c\u0435\u0434\u0438\u0438"
           },
-          "status": {
-            "title": "Status",
+          "year": {
+            "title": "Year",
             "type": "string",
-            "nullable": true,
-            "example": "6 \u0441\u0435\u0437\u043e\u043d, 9 \u0441\u0435\u0440\u0438\u044f"
+            "example": "2013 - ..."
           }
         }
       },
