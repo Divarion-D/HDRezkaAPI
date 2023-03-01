@@ -1,6 +1,7 @@
 import argparse
 import enum
 import json
+import os
 from typing import Union
 
 import uvicorn
@@ -10,8 +11,6 @@ from hd_rezka_api import HdRezkaApi
 from hd_rezka_parser import HdRezkaParser
 
 app = FastAPI()
-
-HDREZKA_URL = "http://hdrezka.co/"
 
 
 def custom_openapi():
@@ -192,14 +191,24 @@ class ContentType(enum.Enum):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+
     parser.add_argument("-ip", help="ip address of the server")
     parser.add_argument("-port", help="port of the server")
+    parser.add_argument("-mirrorUrl", help="url of the mirror hdrezka site")
 
     args = parser.parse_args()
 
-    # set ip to argument, environment variable, or default value if none given
-    ip = args.ip or "0.0.0.0"
-    # set port to argument, environment variable, or default value if none given
-    port = args.port or "8000"
+    if args.ip:
+        os.environ["IP"] = args.ip
+    if args.port:
+        os.environ["PORT"] = args.port
+    if args.mirrorUrl:
+        os.environ["MIRROR_URL"] = args.mirrorUrl
+
+    ip = os.environ.get("IP", "0.0.0.0")
+    port = os.environ.get("PORT", "8000")
+    HDREZKA_URL = os.environ.get("MIRROR_URL", "https://hdrezka.ag/")
+
+    print(f"Server started at {ip}:{port} with mirror {HDREZKA_URL}...")
 
     uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
