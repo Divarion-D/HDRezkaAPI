@@ -2,3 +2,4 @@ venv
 .idea
 *.mp4
 __pycache__
+settings.json
