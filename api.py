@@ -10,15 +10,39 @@ from fastapi import FastAPI, Header
 from hd_rezka_api import HdRezkaApi
 from hd_rezka_parser import HdRezkaParser
 
+
 app = FastAPI()
 
 
 def custom_openapi():
     with open("openapi.json", "r") as openapi:
         return json.load(openapi)
+    
+
+class Settings():
+    def __init__(self):
+        self.ip: str = "0.0.0.0"
+        self.port: int = 8000
+        self.mirror: str = "https://hdrezka.ag/"
+    
+    def set_settings(self, ip: str, port: int, mirror: str):
+        self.ip = ip
+        self.port = port
+        self.mirror = mirror
+
+    def get_settings(self, name: str = None):
+        if name == "ip":
+            return self.ip
+        elif name == "port":
+            return self.port
+        elif name == "mirror":
+            return self.mirror
+        else:
+            return {"ip": self.ip, "port": self.port, "mirror": self.mirror}
 
 
 app.openapi = custom_openapi
+settings = Settings()
 
 
 @app.get("/")
@@ -29,9 +53,9 @@ async def root():
 @app.get("/search")
 async def search(query: str, page: int = 1):
     search_url: str = (
-        f"{HDREZKA_URL}search/?do=search&subaction=search&q={query}&page={page}"
+        f"{settings.get_settings('mirror')}search/?do=search&subaction=search&q={query}&page={page}"
     )
-    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, search_url)
+    parser: HdRezkaParser = HdRezkaParser(settings.get_settings('mirror'), search_url)
     return parser.get_content_list()
 
 
@@ -42,7 +66,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
     elif url is not None and id is None:
         return HdRezkaParser.get_concrete_content_info(url)
     elif url is None and id is not None:
-        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        url = HdRezkaParser.get_url_by_id(settings.get_settings('mirror'), id)
         if url == "error":
             return {"error": "film id not found"}
         return HdRezkaParser.get_concrete_content_info(url)
@@ -57,12 +81,12 @@ async def get_content_translations(
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     elif url is None and id is not None:
-        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        url = HdRezkaParser.get_url_by_id(settings.get_settings('mirror'), id)
         if url == "error":
             return {"error": "film id not found"}
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     else:
         return {"error": "url and id cannot be used together"}
 
@@ -78,12 +102,12 @@ async def get_movie_videos(
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     elif url is None and id is not None:
-        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        url = HdRezkaParser.get_url_by_id(settings.get_settings('mirror'), id)
         if url == "error":
             return {"error": "film id not found"}
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     else:
         return {"error": "url and id cannot be used together"}
 
@@ -105,12 +129,12 @@ async def get_tv_series_seasons(
     if url is None and id is None:
         return {"error": "url or id is required"}
     elif url is not None and id is None:
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     elif url is None and id is not None:
-        url = HdRezkaParser.get_url_by_id(HDREZKA_URL, id)
+        url = HdRezkaParser.get_url_by_id(settings.get_settings('mirror'), id)
         if url == "error":
             return {"error": "film id not found"}
-        api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     else:
         return {"error": "url and id cannot be used together"}
 
@@ -125,7 +149,7 @@ async def get_tv_series_videos(
     id: Union[int, None] = None,
     translation_id: str = None,
 ):
-    api: HdRezkaApi = HdRezkaApi(url, HDREZKA_URL)
+    api: HdRezkaApi = HdRezkaApi(url, settings.get_settings('mirror'))
     stream = api.getStream(
         translation=translation_id, season=season_id, episode=episode_id
     )
@@ -139,14 +163,14 @@ async def get_tv_series_videos(
 
 @app.get("/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
-    url: str = create_url(page, filter, type, HDREZKA_URL)
-    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, url)
+    url: str = create_url(page, filter, type, settings.get_settings('mirror'))
+    parser: HdRezkaParser = HdRezkaParser(settings.get_settings('mirror'), url)
     return parser.get_content_list()
 
 
 @app.get("/genres")
 async def get_genres(type: str = "films"):
-    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL)
+    parser: HdRezkaParser = HdRezkaParser(settings.get_settings('mirror'))
     return parser.get_genres(type)
 
 
@@ -154,8 +178,8 @@ async def get_genres(type: str = "films"):
 async def get_content_by_categories(
     page: int = 1, type: str = "films", genre: str = "any", year: int = None
 ):
-    url = create_categories_url(page, type, genre, year, HDREZKA_URL)
-    parser: HdRezkaParser = HdRezkaParser(HDREZKA_URL, url)
+    url = create_categories_url(page, type, genre, year, settings.get_settings('mirror'))
+    parser: HdRezkaParser = HdRezkaParser(settings.get_settings('mirror'), url)
     return parser.get_content_list()
 
 
@@ -207,8 +231,8 @@ if __name__ == "__main__":
 
     ip = os.environ.get("IP", "0.0.0.0")
     port = os.environ.get("PORT", "8000")
-    HDREZKA_URL = os.environ.get("MIRROR_URL", "https://hdrezka.ag/")
+    mirror = os.environ.get("MIRROR_URL", "https://hdrezka.ag/")
 
-    print(f"Server started at {ip}:{port} with mirror {HDREZKA_URL}...")
+    settings.set_settings(ip, port, mirror)
 
-    uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True)
+    uvicorn.run("api:app", host=ip, port=int(port), debug=True, reload=True, )
