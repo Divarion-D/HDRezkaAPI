@@ -35,7 +35,7 @@ MIRROR_URL - Адрес зеркала hdrezka (по умолчанию https://
 При запуске контейнера, если не указаны переменные окружения, то будут использоваться значения по умолчанию.
 Чтобы изменить значения по умолчанию, Требуется по шаблону написать команду для запуска контейнера.
 ```
-docker run -d --name hdrezka_api --restart=always -p 8000:8000 --env MIRROR_URL="https://hdrezka.ag/" образ env
+docker run -d --name hdrezka_api --restart=always -p 8000:8000 --env MIRROR_URL="https://hdrezka.ag/" образ
 ```
 
 ### Запуск
