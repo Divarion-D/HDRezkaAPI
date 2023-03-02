@@ -35,19 +35,19 @@ class HdRezkaParser:
         # Search for genres in types
         genres_out = []
         types_url = f"/{types}/"
-        for i in range(len(genres)):
-            for j in range(len(genres[i])):
-                if genres[i][j].attrs["href"].find(types_url) != -1:
-                    genres_out.append(
-                        {
-                            "name": genres[i][j].text,
-                            "name_en": genres[i][j]
-                            .attrs["href"]
-                            .replace(types_url, "")
-                            .replace("/", ""),
-                            "url": genres[i][j].attrs["href"],
-                        }
-                    )
+        for genre_ in genres:
+            genres_out.extend(
+                {
+                    "name": genre_[j].text,
+                    "name_en": genre_[j]
+                    .attrs["href"]
+                    .replace(types_url, "")
+                    .replace("/", ""),
+                    "url": genre_[j].attrs["href"],
+                }
+                for j in range(len(genre_))
+                if genre_[j].attrs["href"].find(types_url) != -1
+            )
         return genres_out
 
     @staticmethod
