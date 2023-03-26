@@ -4,7 +4,9 @@ from requests_html import HTMLSession
 
 
 class HdRezkaParser:
+    """Class for parsing HDRezka content"""
     def __init__(self, mirror, url):
+        """Initialize the class with the given parameters."""
         self.url = url
         self.mirror = mirror
         self.headers = {
@@ -12,46 +14,40 @@ class HdRezkaParser:
         }
 
     def get_content_list(self):
+        """Get a list of content from the given URL"""
         session = HTMLSession()
+        print(self.url)
         resp = session.get(self.url, headers=self.headers)
         html = BS(resp.html.html, "html.parser")
+        content_list = html.find_all("div", class_="b-content__inline_item")
+        content_list = list(map(lambda content: self.get_content_info(self, content), content_list))
         session.close()
-        content_list = html.find("div", class_="b-content__inline_items").find_all(
-            "div", class_="b-content__inline_item"
-        )
-        content_list = list(
-            map(lambda content: self.get_content_info(self, content), content_list)
-        )
-
         return content_list
-
+    
     def get_genres(self, types):
+        """Get a list of genres from the given type"""
         session = HTMLSession()
-        resp = session.get(self.url, headers=self.headers)
+        resp = session.get(self.mirror, headers=self.headers)
         html = BS(resp.html.html, "html.parser")
         session.close()
         genres = html.find_all("ul", class_="left")
         genres = list(map(lambda genre: genre.find_all("a"), genres))
         # Search for genres in types
-        genres_out = []
         types_url = f"/{types}/"
-        for i in range(len(genres)):
-            for j in range(len(genres[i])):
-                if genres[i][j].attrs["href"].find(types_url) != -1:
-                    genres_out.append(
-                        {
-                            "name": genres[i][j].text,
-                            "name_en": genres[i][j]
-                            .attrs["href"]
-                            .replace(types_url, "")
-                            .replace("/", ""),
-                            "url": genres[i][j].attrs["href"],
-                        }
-                    )
+        genres_out = [
+            {
+                "name": genre[j].text,
+                "name_en": genre[j].attrs["href"].replace(types_url, "").replace("/", ""),
+                "url": genre[j].attrs["href"],
+            }
+            for genre in genres
+            for j in range(len(genre))
+            if genre[j].attrs["href"].find(types_url) != -1
+        ]
         return genres_out
-
     @staticmethod
     def get_content_info(self, content):
+        """Get content info from the given content element"""
         content_info = {
             "id": int(content.attrs["data-id"]),
             "type": content.find("i", class_="entity").text,
@@ -61,20 +57,17 @@ class HdRezkaParser:
         )
         content_info["mirrorLessUrl"] = content.find("div").find("a").attrs["href"]
         content_info["imageUrl"] = content.find("img").attrs["src"]
-
         session = HTMLSession()
         resp = session.post(
-            f"{self.mirror}engine/ajax/quick_content.php",
+            f"{self.mirror}/engine/ajax/quick_content.php",
             headers=self.headers,
             params={"id": content_info["id"], "is_touch": 1},
         )
         details_info = BS(resp.html.html, "html.parser")
         session.close()
-
         details_info_text = details_info.find_all(
             "div", class_="b-content__bubble_text"
         )
-
         for i in range(len(details_info_text)):
             if (
                 details_info_text[i].text != ""
@@ -91,26 +84,27 @@ class HdRezkaParser:
                     list(map(lambda genre: genre.text, genres))
                 )
                 continue
-
         item_link = (
             content.find("div", class_="b-content__inline_item-link")
             .find("div")
             .text.split(",")
         )
-
-        content_info["year"] = item_link[0].strip()
-
+        try:
+            content_info["year"] = item_link[0].strip()
+        except IndexError:
+            content_info["year"] = None
         return content_info
-
     @staticmethod
     def get_url_by_id(mirror, id):
-        url = f"{mirror}engine/ajax/quick_content.php"
+        """Get the URL for the given ID"""
+        url = f"{mirror}/engine/ajax/quick_content.php"
         data = {"id": id, "is_touch": 1}
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+            "Accept": "application/json"
         }
-        r = requests.post(url, headers=headers, data=data)
-        html = BS(r.content, "html5lib")
+        r = requests.get(url, headers=headers, params=data)
+        html = BS(r.content, "lxml")
         try:
             return (
                 html.find("div", class_="b-content__bubble_title")
@@ -122,12 +116,18 @@ class HdRezkaParser:
 
     @staticmethod
     def get_concrete_content_info(url):
+        # Set headers for request
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
         }
-        r = requests.get(url, headers=headers)
-        html = BS(r.content, "html5lib")
-
+        # Make request and parse response
+        try:
+            r = requests.get(url, headers=headers)
+            html = BS(r.content, "html5lib")
+        except Exception as e:
+            print("Error making request: {}".format(e))
+            return {"error": 1, "error_code": 401, "error_message": "Error making request: {}".format(e)}
+        # Initialize content info
         content_info = {"id": int(html.find(id="post_id").attrs["value"])}
         content_info["url"] = url
         content_info["type"] = (
@@ -140,47 +140,44 @@ class HdRezkaParser:
         content_info["imageUrl"] = (
             html.find("div", class_="b-sidecover").find("a").attrs["href"]
         )
-
+        # Get data from table
         table = html.find("table", class_="b-post__info")
-        table_body = table.find("tbody")
-        rows = table_body.find_all("tr")
-        rows = table_body.find_all("tr")
-
-        data = {}
-        for row in rows[:-1]:
-            cols = row.find_all("td")
-            cols = [ele.text.strip() for ele in cols]
-            data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
-
-        # convert time
-        time = data.get("time")
-        if time is not None:
-            if time.find(" мин.") != -1:
-                time = time.replace(" мин.", "")
-            if time.find(":") != -1:
-                hour, minute = time.split(":")
-                hour = int(hour)
-                minute = int(minute)
-            else:
-                hour, minute = divmod(int(time), 60)
-            if hour < 10:
-                hour = f"0{str(hour)}"
-            if minute < 10:
-                minute = f"0{str(minute)}"
-            data["time"] = f"{str(hour)}:{str(minute)}"
-
-        actors = [
-            f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")
-        ]
-        data["actors"] = "".join(actors).replace(" и другие ", "").strip()
-
-        data.pop("is_series_bad", None)
-        data.pop("list_bad", None)
-
-        content_info["data"] = data
-
+        if table is not None:
+            table_body = table.find("tbody")
+            rows = table_body.find_all("tr")
+            data = {}
+            for row in rows[:-1]:
+                cols = row.find_all("td")
+                cols = [ele.text.strip() for ele in cols]
+                data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
+            # Convert time
+            time = data.get("time")
+            if time is not None:
+                if time.find(" мин.") != -1:
+                    time = time.replace(" мин.", "")
+                    if time.find(":") != -1:
+                        hour, minute = time.split(":")
+                        hour = int(hour)
+                        minute = int(minute)
+                    else:
+                        hour, minute = divmod(int(time), 60)
+                    if hour < 10:
+                        hour = f"0{str(hour)}"
+                    if minute < 10:
+                        minute = f"0{str(minute)}"
+                    data["time"] = f"{str(hour)}:{str(minute)}"
+            # Get actors
+            actors = [
+                f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")
+            ]
+            data["actors"] = "".join(actors).replace(" и другие ", "").strip()
+            # Remove unnecessary data
+            data.pop("is_series_bad", None)
+            data.pop("list_bad", None)
+            # Add data to content info
+            content_info["data"] = data
+        # Get translations
         content_info["translations_id"] = []
-
         translations = html.find("ul", id="translators-list")
         if translations is not None:
             for translation in translations.find_all("li"):
@@ -190,12 +187,17 @@ class HdRezkaParser:
                         "id": translation.attrs["data-translator_id"],
                     }
                 )
-
+        # Return content info
         return content_info
 
 
 class DataAtribute:
     def __init__(self, name):
+        """
+        Class for mapping data atributes
+        Parameters:
+            name (str): Name of the data atribute
+        """
         array = {
             "Рейтинги": "rating",
             "Слоган": "slogan",
@@ -212,7 +214,11 @@ class DataAtribute:
             "В ролях актеры": "actors",
             "Входит в списки": "list_bad",
         }
-        self.name = array[name]
+        try:
+            self.name = array[name]
+        except KeyError:
+            print("Error: Invalid name provided")
+            self.name = None
 
-    def __str__(self):
-        return self.name
+        def __str__(self):
+            return self.name

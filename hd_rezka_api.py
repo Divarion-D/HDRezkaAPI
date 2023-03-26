@@ -40,26 +40,41 @@ class HdRezkaStreamSubtitles:
 
 class HdRezkaStream:
     def __init__(self, season, episode, subtitles={}):
+        """Initialize HdRezkaStream object
+        Arguments:
+        season {int} -- Season number
+        episode {int} -- Episode number
+        subtitles {dict} -- Subtitles (default: {None})
+        """
         self.videos = {}
         self.season = season
         self.episode = episode
         self.subtitles = HdRezkaStreamSubtitles(**subtitles)
-
     def append(self, resolution, link):
+        """Append video to the list of videos
+        Arguments:
+        resolution {str} -- Resolution of the video
+        link {str} -- Link to the video
+        """
         self.videos[resolution] = link
-
     def __str__(self):
-        resolutions = list(self.videos.keys())
+        resolutions = (res for res in self.videos.keys())
         if self.subtitles.subtitles:
             return f"<HdRezkaStream> : {resolutions}, subtitles={self.subtitles}"
         return f"<HdRezkaStream> : {resolutions}"
-
     def __repr__(self):
         return f"<HdRezkaStream(season:{self.season}, episode:{self.episode})>"
-
     def __call__(self, resolution):
-        if coincidences := list(filter(lambda x: str(resolution) in x, self.videos)):
-            return self.videos[coincidences[0]]
+        """Get video link by resolution
+        Arguments:
+        resolution {str} -- Resolution of the video
+        Raises:
+        ValueError: If resolution is not defined
+        Returns:
+        str -- Link to the video
+        """
+        if coincidences := {res: link for res, link in self.videos.items() if str(resolution) in res}:
+            return coincidences[list(coincidences.keys())[0]]
         raise ValueError(f'Resolution "{resolution}" is not defined')
 
 
@@ -70,7 +85,6 @@ class HdRezkaApi:
         self.HEADERS = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
         }
-        print(url)
         self.url = url.split(".html")[0] + ".html"
         self.mirror = mirror
         self.page = self.getPage()
@@ -84,7 +98,16 @@ class HdRezkaApi:
         self.seriesInfo = None
 
     def getPage(self):
-        return requests.get(self.url, headers=self.HEADERS)
+        for _ in range(3):
+            try:
+                response = requests.get(self.url, headers=self.HEADERS)
+                if response.status_code == 200:
+                    return response
+                else:
+                    print("Error occurred while getting page: ", response.status_code)
+            except Exception as e:
+                print("Error occurred while getting page: ", e)
+        return None
 
     def getSoup(self):
         return BeautifulSoup(self.page.content, "html.parser")
@@ -100,29 +123,30 @@ class HdRezkaApi:
 
     @staticmethod
     def clearTrash(data):
+        # Create a list of characters to be removed from the data
         trashList = ["@", "#", "!", "^", "$"]
+        # Create an empty list to store the generated codes
         trashCodesSet = []
+        # Generate codes with 2 and 3 characters from the trashList
         for i in range(2, 4):
             startchar = ""
             for chars in product(trashList, repeat=i):
                 data_bytes = startchar.join(chars).encode("utf-8")
                 trashcombo = base64.b64encode(data_bytes)
                 trashCodesSet.append(trashcombo)
-
+        # Split the data into an array and join it back as a string
         arr = data.replace("#h", "").split("//_//")
         trashString = "".join(arr)
-
+        # Replace the generated codes in the string with empty strings
         for i in trashCodesSet:
             temp = i.decode("utf-8")
             trashString = trashString.replace(temp, "")
-
+        # Decode the string using base64
         finalString = base64.b64decode(f"{trashString}==")
-
+        # Try to decode the string using utf-8, if it fails use cp1251
         try:
-            print(1)
             return finalString.decode("utf-8")
         except UnicodeDecodeError:
-            print(2)
             return finalString.decode("cp1251")
 
     def getTranslations(self):
@@ -133,8 +157,7 @@ class HdRezkaApi:
             for child in children:
                 if child.text:
                     arr[child.text] = child.attrs["data-translator_id"]
-
-        if not arr:
+        else:
             # auto-detect
             def getTranslationName(s):
                 table = s.find(class_="b-post__info")
@@ -142,19 +165,14 @@ class HdRezkaApi:
                     tmp = i.get_text()
                     if tmp.find("переводе") > 0:
                         return tmp.split("В переводе:")[-1].strip()
-
             def getTranslationID(s):
                 initCDNEvents = {
                     "video.tv_series": "initCDNSeriesEvents",
                     "video.movie": "initCDNMoviesEvents",
                 }
-                tmp = s.text.split(f"sof.tv.{initCDNEvents[self.type]}")[-1].split("{")[
-                    0
-                ]
+                tmp = s.text.split(f"sof.tv.{initCDNEvents[self.type]}")[-1].split("{")[0]
                 return tmp.split(",")[1].strip()
-
             arr[getTranslationName(self.soup)] = getTranslationID(self.page)
-
         self.translators = arr
         return arr
 

@@ -3,45 +3,46 @@ import enum
 import json
 import os
 from typing import Union
-
 import uvicorn
 from fastapi import FastAPI, Header
-
 from hd_rezka_api import HdRezkaApi
 from hd_rezka_parser import HdRezkaParser
-
-
+# Create the FastAPI app
 app = FastAPI()
-
-
+# Create a custom openapi function
 def custom_openapi():
     with open("openapi.json", "r") as openapi:
         return json.load(openapi)
-
-
+# Create a Settings class to store and manage settings
 class Settings:
     def __init__(self):
+        # Set default values for ip, port and mirror
         self.ip: str = "0.0.0.0"
         self.port: int = 8000
-        self.mirror: str = "https://hdrezka.ag/"
-        # create settings file if not exists
+        self.mirror: str = "https://hdrezka.ag"
+        # Create settings file if it does not exist
         if not os.path.exists("settings.json"):
             with open("settings.json", "w") as settings_file:
                 json.dump(
                     {"ip": self.ip, "port": self.port, "mirror": self.mirror},
                     settings_file,
                 )
-
+    # Set the settings for the object
     def set_settings(self, ip: str, port: int, mirror: str):
         self.ip = ip
         self.port = port
         self.mirror = mirror
+        # Write the settings to a JSON file
         with open("settings.json", "w") as settings_file:
             json.dump(
-                {"ip": self.ip, "port": self.port, "mirror": self.mirror},
-                settings_file,
+                {
+                    "ip": self.ip,
+                    "port": self.port,
+                    "mirror": self.mirror
+                },
+                settings_file
             )
-
+    # Retrieve settings from settings.json file
     def get_settings(self, name: str = None):
         with open("settings.json", "r") as settings_file:
             settings = json.load(settings_file)
@@ -53,24 +54,22 @@ class Settings:
             return settings["mirror"]
         else:
             return settings
-
-
+ # Set the custom openapi function
 app.openapi = custom_openapi
+ # Create an instance of the Settings class
 settings = Settings()
-
-
+ # Create the root route
 @app.get("/")
 async def root():
     return {"message": "no requests here"}
-
-
+ # Create the search route
 @app.get("/search")
 async def search(query: str, page: int = 1):
-    search_url: str = f"{settings.get_settings('mirror')}search/?do=search&subaction=search&q={query}&page={page}"
+    search_url: str = f"{settings.get_settings('mirror')}/search/?do=search&subaction=search&q={query}&page={page}"
     parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), search_url)
     return parser.get_content_list()
 
-
+# Create the details route
 @app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
     if url is None and id is None:
@@ -85,7 +84,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
     else:
         return {"error": "url and id cannot be used together"}
 
-
+# Create the translations route
 @app.get("/translations")
 async def get_content_translations(
     url: Union[str, None] = None, id: Union[int, None] = None
@@ -101,7 +100,6 @@ async def get_content_translations(
         api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
     else:
         return {"error": "url and id cannot be used together"}
-
     return api.getTranslations()
 
 
@@ -198,7 +196,7 @@ async def get_content(page: int, filter: str = "last", type: str = "all"):
 
 @app.get("/genres")
 async def get_genres(type: str = "films"):
-    parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"))
+    parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), "")
     return parser.get_genres(type)
 
 
