@@ -76,7 +76,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         return HdRezkaParser.get_concrete_content_info(url)
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         if url == "error":
             return {"error": "film id not found"}
@@ -93,7 +93,7 @@ async def get_content_translations(
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         if url == "error":
             return {"error": "film id not found"}
@@ -113,7 +113,7 @@ async def get_movie_videos(
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         if url == "error":
             return {"error": "film id not found"}
@@ -123,9 +123,8 @@ async def get_movie_videos(
 
     stream = api.getStream(translation=translation_id)
 
-    if type(stream) == dict:
-        if stream.get("error"):
-            return stream
+    if type(stream) == dict and stream.get("error"):
+        return stream
 
     return stream.videos
 
@@ -140,7 +139,7 @@ async def get_tv_series_seasons(
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         query = url.split("/", 3)[3]
         url = f"{settings.get_settings('mirror')}{query}"
@@ -166,7 +165,7 @@ async def get_tv_series_videos(
         return {"error": "url or id is required"}
     elif url is not None and id is None:
         api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    elif url is None and id is not None:
+    elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         query = url.split("/", 3)[3]
         url = f"{settings.get_settings('mirror')}{query}"
@@ -180,9 +179,8 @@ async def get_tv_series_videos(
         translation=translation_id, season=season_id, episode=episode_id
     )
 
-    if type(stream) == dict:
-        if stream.get("error"):
-            return stream
+    if type(stream) == dict and stream.get("error"):
+        return stream
 
     return stream.videos
 

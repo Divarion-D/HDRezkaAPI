@@ -58,7 +58,7 @@ class HdRezkaStream:
         """
         self.videos[resolution] = link
     def __str__(self):
-        resolutions = (res for res in self.videos.keys())
+        resolutions = iter(self.videos.keys())
         if self.subtitles.subtitles:
             return f"<HdRezkaStream> : {resolutions}, subtitles={self.subtitles}"
         return f"<HdRezkaStream> : {resolutions}"

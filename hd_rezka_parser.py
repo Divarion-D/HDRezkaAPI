@@ -34,17 +34,19 @@ class HdRezkaParser:
         genres = list(map(lambda genre: genre.find_all("a"), genres))
         # Search for genres in types
         types_url = f"/{types}/"
-        genres_out = [
+        return [
             {
                 "name": genre[j].text,
-                "name_en": genre[j].attrs["href"].replace(types_url, "").replace("/", ""),
+                "name_en": genre[j]
+                .attrs["href"]
+                .replace(types_url, "")
+                .replace("/", ""),
                 "url": genre[j].attrs["href"],
             }
             for genre in genres
             for j in range(len(genre))
             if genre[j].attrs["href"].find(types_url) != -1
         ]
-        return genres_out
     @staticmethod
     def get_content_info(self, content):
         """Get content info from the given content element"""
@@ -125,8 +127,12 @@ class HdRezkaParser:
             r = requests.get(url, headers=headers)
             html = BS(r.content, "html5lib")
         except Exception as e:
-            print("Error making request: {}".format(e))
-            return {"error": 1, "error_code": 401, "error_message": "Error making request: {}".format(e)}
+            print(f"Error making request: {e}")
+            return {
+                "error": 1,
+                "error_code": 401,
+                "error_message": f"Error making request: {e}",
+            }
         # Initialize content info
         content_info = {"id": int(html.find(id="post_id").attrs["value"])}
         content_info["url"] = url
@@ -152,20 +158,19 @@ class HdRezkaParser:
                 data[str(DataAtribute(cols[0].replace(":", "")))] = cols[1]
             # Convert time
             time = data.get("time")
-            if time is not None:
-                if time.find(" мин.") != -1:
-                    time = time.replace(" мин.", "")
-                    if time.find(":") != -1:
-                        hour, minute = time.split(":")
-                        hour = int(hour)
-                        minute = int(minute)
-                    else:
-                        hour, minute = divmod(int(time), 60)
-                    if hour < 10:
-                        hour = f"0{str(hour)}"
-                    if minute < 10:
-                        minute = f"0{str(minute)}"
-                    data["time"] = f"{str(hour)}:{str(minute)}"
+            if time is not None and time.find(" мин.") != -1:
+                time = time.replace(" мин.", "")
+                if time.find(":") != -1:
+                    hour, minute = time.split(":")
+                    hour = int(hour)
+                    minute = int(minute)
+                else:
+                    hour, minute = divmod(int(time), 60)
+                if hour < 10:
+                    hour = f"0{str(hour)}"
+                if minute < 10:
+                    minute = f"0{str(minute)}"
+                data["time"] = f"{str(hour)}:{str(minute)}"
             # Get actors
             actors = [
                 f"{actor.text} " for actor in rows[-1].find_all("span", class_="item")
