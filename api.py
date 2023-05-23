@@ -7,12 +7,19 @@ import uvicorn
 from fastapi import FastAPI, Header
 from hd_rezka_api import HdRezkaApi
 from hd_rezka_parser import HdRezkaParser
+
+import Helper.HdRezka as HdRezka
+
 # Create the FastAPI app
 app = FastAPI()
+
+
 # Create a custom openapi function
 def custom_openapi():
     with open("openapi.json", "r") as openapi:
         return json.load(openapi)
+
+
 # Create a Settings class to store and manage settings
 class Settings:
     def __init__(self):
@@ -27,6 +34,7 @@ class Settings:
                     {"ip": self.ip, "port": self.port, "mirror": self.mirror},
                     settings_file,
                 )
+
     # Set the settings for the object
     def set_settings(self, ip: str, port: int, mirror: str):
         self.ip = ip
@@ -35,13 +43,9 @@ class Settings:
         # Write the settings to a JSON file
         with open("settings.json", "w") as settings_file:
             json.dump(
-                {
-                    "ip": self.ip,
-                    "port": self.port,
-                    "mirror": self.mirror
-                },
-                settings_file
+                {"ip": self.ip, "port": self.port, "mirror": self.mirror}, settings_file
             )
+
     # Retrieve settings from settings.json file
     def get_settings(self, name: str = None):
         with open("settings.json", "r") as settings_file:
@@ -54,53 +58,38 @@ class Settings:
             return settings["mirror"]
         else:
             return settings
- # Set the custom openapi function
+
+
+# Set the custom openapi function
 app.openapi = custom_openapi
- # Create an instance of the Settings class
+# Create an instance of the Settings class
 settings = Settings()
- # Create the root route
+
+
+# Create the root route
 @app.get("/")
 async def root():
     return {"message": "no requests here"}
- # Create the search route
+
+
+# Create the search route
 @app.get("/search")
 async def search(query: str, page: int = 1):
-    search_url: str = f"{settings.get_settings('mirror')}/search/?do=search&subaction=search&q={query}&page={page}"
-    parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), search_url)
-    return parser.get_content_list()
+    return HdRezka.search(settings.get_settings("mirror"), query, page)
+
 
 # Create the details route
 @app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
-    if url is None and id is None:
-        return {"error": "url or id is required"}
-    elif url is not None and id is None:
-        return HdRezkaParser.get_concrete_content_info(url)
-    elif url is None:
-        url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
-        if url == "error":
-            return {"error": "film id not found"}
-        return HdRezkaParser.get_concrete_content_info(url)
-    else:
-        return {"error": "url and id cannot be used together"}
+    return HdRezka.details(settings.get_settings("mirror"), url, id)
+
 
 # Create the translations route
 @app.get("/translations")
 async def get_content_translations(
     url: Union[str, None] = None, id: Union[int, None] = None
 ):
-    if url is None and id is None:
-        return {"error": "url or id is required"}
-    elif url is not None and id is None:
-        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    elif url is None:
-        url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
-        if url == "error":
-            return {"error": "film id not found"}
-        api: HdRezkaApi = HdRezkaApi(url, settings.get_settings("mirror"))
-    else:
-        return {"error": "url and id cannot be used together"}
-    return api.getTranslations()
+    return HdRezka.translations(settings.get_settings("mirror"), url, id)
 
 
 @app.get("/movie/videos")
@@ -257,7 +246,7 @@ if __name__ == "__main__":
 
     ip = os.environ.get("IP", "0.0.0.0")
     port = os.environ.get("PORT", "8000")
-    mirror = os.environ.get("MIRROR_URL", "https://hdrezka.ag/")
+    mirror = os.environ.get("MIRROR_URL", "https://hdrezka.ag")
 
     settings.set_settings(ip, port, mirror)
 
