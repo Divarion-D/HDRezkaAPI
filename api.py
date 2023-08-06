@@ -8,9 +8,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-import Helper.HdRezka as HdRezka
-from hd_rezka_api import HdRezkaApi
-from hd_rezka_parser import HdRezkaParser
+import utils.HdRezka as HdRezka
+from helper.hd_rezka_api import HdRezkaApi
+from helper.hd_rezka_parser import HdRezkaParser
 
 # Create the FastAPI app
 app = FastAPI(title="web")

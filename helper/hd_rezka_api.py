@@ -50,6 +50,7 @@ class HdRezkaStream:
         self.season = season
         self.episode = episode
         self.subtitles = HdRezkaStreamSubtitles(**subtitles)
+
     def append(self, resolution, link):
         """Append video to the list of videos
         Arguments:
@@ -57,13 +58,16 @@ class HdRezkaStream:
         link {str} -- Link to the video
         """
         self.videos[resolution] = link
+
     def __str__(self):
         resolutions = iter(self.videos.keys())
         if self.subtitles.subtitles:
             return f"<HdRezkaStream> : {resolutions}, subtitles={self.subtitles}"
         return f"<HdRezkaStream> : {resolutions}"
+
     def __repr__(self):
         return f"<HdRezkaStream(season:{self.season}, episode:{self.episode})>"
+
     def __call__(self, resolution):
         """Get video link by resolution
         Arguments:
@@ -165,6 +169,7 @@ class HdRezkaApi:
                     tmp = i.get_text()
                     if tmp.find("переводе") > 0:
                         return tmp.split("В переводе:")[-1].strip()
+
             def getTranslationID(s):
                 initCDNEvents = {
                     "video.tv_series": "initCDNSeriesEvents",
@@ -269,7 +274,7 @@ class HdRezkaApi:
             )
             r = r.json()
             if r["success"]:
-                if r["url"] == False:
+                if r["url"] is False:
                     return {
                         "error": "no_video",
                         "message": "Видео не найдено или заблокировано в вашем регионе",

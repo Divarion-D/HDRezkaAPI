@@ -1,6 +1,6 @@
 venv
 .idea
-*.mp4
+temp
 __pycache__
 settings.json
 env

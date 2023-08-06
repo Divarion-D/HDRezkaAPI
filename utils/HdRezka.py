@@ -1,6 +1,6 @@
 from typing import Union
-from hd_rezka_api import HdRezkaApi
-from hd_rezka_parser import HdRezkaParser
+from helper.hd_rezka_api import HdRezkaApi
+from helper.hd_rezka_parser import HdRezkaParser
 
 
 def search(mirror: str, query: str, page: int = 1) -> list:
