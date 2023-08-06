@@ -3,15 +3,22 @@ import enum
 import json
 import os
 from typing import Union
+
 import uvicorn
-from fastapi import FastAPI, Header
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+import Helper.HdRezka as HdRezka
 from hd_rezka_api import HdRezkaApi
 from hd_rezka_parser import HdRezkaParser
 
-import Helper.HdRezka as HdRezka
-
 # Create the FastAPI app
-app = FastAPI()
+app = FastAPI(title="web")
+api_app = FastAPI(title="api")
+
+
+app.mount("/api", api_app)
+app.mount("/web", StaticFiles(directory="static", html=True), name="static")
 
 
 # Create a custom openapi function
@@ -61,38 +68,38 @@ class Settings:
 
 
 # Set the custom openapi function
-app.openapi = custom_openapi
+api_app.openapi = custom_openapi
 # Create an instance of the Settings class
 settings = Settings()
 
 
-# Create the root route
-@app.get("/")
-async def root():
-    return {"message": "no requests here"}
+# # Create the root route
+# @app.get("/")
+# async def root():
+#     return {"message": "no requests here"}
 
 
 # Create the search route
-@app.get("/search")
+@api_app.get("/search")
 async def search(query: str, page: int = 1):
     return HdRezka.search(settings.get_settings("mirror"), query, page)
 
 
 # Create the details route
-@app.get("/details")
+@api_app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
     return HdRezka.details(settings.get_settings("mirror"), url, id)
 
 
 # Create the translations route
-@app.get("/translations")
+@api_app.get("/translations")
 async def get_content_translations(
     url: Union[str, None] = None, id: Union[int, None] = None
 ):
     return HdRezka.translations(settings.get_settings("mirror"), url, id)
 
 
-@app.get("/movie/videos")
+@api_app.get("/movie/videos")
 async def get_movie_videos(
     url: Union[str, None] = None,
     id: Union[int, None] = None,
@@ -118,7 +125,7 @@ async def get_movie_videos(
     return stream.videos
 
 
-@app.get("/tv_series/seasons")
+@api_app.get("/tv_series/seasons")
 async def get_tv_series_seasons(
     url: Union[str, None] = None,
     id: Union[int, None] = None,
@@ -142,7 +149,7 @@ async def get_tv_series_seasons(
     return api.getSeasons(translator_id=translation_id)
 
 
-@app.get("/tv_series/videos")
+@api_app.get("/tv_series/videos")
 async def get_tv_series_videos(
     season_id: str,
     episode_id: str,
@@ -174,20 +181,20 @@ async def get_tv_series_videos(
     return stream.videos
 
 
-@app.get("/page/{page}")
+@api_app.get("/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, settings.get_settings("mirror"))
     parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), url)
     return parser.get_content_list()
 
 
-@app.get("/genres")
+@api_app.get("/genres")
 async def get_genres(type: str = "films"):
     parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), "")
     return parser.get_genres(type)
 
 
-@app.get("/category/page/{page}")
+@api_app.get("/category/page/{page}")
 async def get_content_by_categories(
     page: int = 1, type: str = "films", genre: str = "any", year: int = None
 ):
@@ -213,7 +220,7 @@ def create_categories_url(page: int, type: str, genre: str, year: int, mirror: s
     url = f"{mirror}{type}/best/"
     if genre != "any":
         url += f"{genre}/"
-    if year != None:
+    if year is not None:
         url += f"{year}/"
     if page != 1:
         url += f"page/{page}/"

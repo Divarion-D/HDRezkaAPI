@@ -28,14 +28,14 @@ python3 api.py
 ```
 IP - Адрес на котором будет запущен сервер
 PORT - Порт на котором будет запущен сервер
-MIRROR_URL - Адрес зеркала hdrezka (по умолчанию https://hdrezka.ag/)
+MIRROR_URL - Адрес зеркала hdrezka (по умолчанию https://hdrezka.ag)
 ```
 
 ### Пометка
 При запуске контейнера, если не указаны переменные окружения, то будут использоваться значения по умолчанию.
 Чтобы изменить значения по умолчанию, Требуется по шаблону написать команду для запуска контейнера.
 ```
-docker run -d --name hdrezka_api --restart=always -p 8000:8000 --env MIRROR_URL="https://hdrezka.ag/" образ
+docker run -d --name hdrezka_api --restart=always -p 8000:8000 --env MIRROR_URL="https://hdrezka.ag" образ
 ```
 
 ### Запуск
@@ -70,4 +70,4 @@ docker run -d --name hdrezka_api --restart=always -p 8000:8000 divarion/hdrezka_
 
 
 ## Документация
-http://127.0.1.1:8000/docs
+http://127.0.1.1:8000/api/docs

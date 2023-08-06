@@ -5,6 +5,7 @@ from requests_html import HTMLSession
 
 class HdRezkaParser:
     """Class for parsing HDRezka content"""
+
     def __init__(self, mirror, url):
         """Initialize the class with the given parameters."""
         self.url = url
@@ -20,10 +21,12 @@ class HdRezkaParser:
         resp = session.get(self.url, headers=self.headers)
         html = BS(resp.html.html, "html.parser")
         content_list = html.find_all("div", class_="b-content__inline_item")
-        content_list = list(map(lambda content: self.get_content_info(self, content), content_list))
+        content_list = list(
+            map(lambda content: self.get_content_info(self, content), content_list)
+        )
         session.close()
         return content_list
-    
+
     def get_genres(self, types):
         """Get a list of genres from the given type"""
         session = HTMLSession()
@@ -47,6 +50,7 @@ class HdRezkaParser:
             for j in range(len(genre))
             if genre[j].attrs["href"].find(types_url) != -1
         ]
+
     @staticmethod
     def get_content_info(self, content):
         """Get content info from the given content element"""
@@ -96,6 +100,7 @@ class HdRezkaParser:
         except IndexError:
             content_info["year"] = None
         return content_info
+
     @staticmethod
     def get_url_by_id(mirror, id):
         """Get the URL for the given ID"""
@@ -103,7 +108,7 @@ class HdRezkaParser:
         data = {"id": id, "is_touch": 1}
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
-            "Accept": "application/json"
+            "Accept": "application/json",
         }
         r = requests.get(url, headers=headers, params=data)
         html = BS(r.content, "lxml")
@@ -120,7 +125,7 @@ class HdRezkaParser:
     def get_concrete_content_info(url):
         # Set headers for request
         headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36"
         }
         # Make request and parse response
         try:
@@ -225,5 +230,5 @@ class DataAtribute:
             print("Error: Invalid name provided")
             self.name = None
 
-        def __str__(self):
-            return self.name
+    def __str__(self):
+        return self.name
