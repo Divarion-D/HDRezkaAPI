@@ -42,7 +42,9 @@ class Download:
             print(
                 f"{i} - {search_request[i]['title']} ({search_request[i]['year']}) ({search_request[i]['mirrorLessUrl']})"
             )
+
         series_id = int(input("Введите номер: "))
+
         self.url = search_request[series_id]["mirrorLessUrl"]
         self.title = search_request[series_id]["title"]
 
@@ -69,7 +71,7 @@ class Download:
         # get series list
         series_list = HdRezkaApi(self.url, MIRROR_URL).getSeasons(translator_id=translation_id)
         for i in range(1, len(series_list["episodes"][str(season_id)]) + 1):
-            episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=i)
+            episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=i).videos
 
             file_name = f"{self.title} - {season_id}s{i}e.mp4"
 
