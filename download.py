@@ -3,12 +3,15 @@ import os
 import requests
 from tqdm import tqdm
 
+import utils.HdRezka as HdRezka
+from helper.hd_rezka_api import HdRezkaApi
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/103.0.0.0 Safari/537.36 "
 }
 
-API_URL = "http://127.0.0.1:8000/"
+MIRROR_URL = "https://hdrezka.ag"
 
 
 class Error(Exception):
@@ -33,9 +36,8 @@ class Download:
     def __init__(self):
         search_title = input("Введите название: ")
 
-        search_request = requests.get(
-            f"{API_URL}search/?query={search_title}&page=1"
-        ).json()
+        search_request = HdRezka.search(MIRROR_URL, search_title, 1)
+
         for i in range(len(search_request)):
             print(
                 f"{i} - {search_request[i]['title']} ({search_request[i]['year']}) ({search_request[i]['mirrorLessUrl']})"
@@ -44,7 +46,7 @@ class Download:
         self.url = search_request[series_id]["mirrorLessUrl"]
         self.title = search_request[series_id]["title"]
 
-        detail_info_request = requests.get(f"{API_URL}details/?url={self.url}").json()
+        detail_info_request = HdRezka.details(MIRROR_URL, self.url, None)
 
         for i in range(len(detail_info_request["translations_id"])):
             print(f"{i} - {detail_info_request['translations_id'][i]['name']}")
@@ -65,13 +67,10 @@ class Download:
 
     def Download_Season(self, season_id, translation_id):
         # get series list
-        series_list = requests.get(
-            f"{API_URL}tv_series/seasons/?url={self.url}&translation_id={translation_id}"
-        ).json()
+        series_list = HdRezkaApi(self.url, MIRROR_URL).getSeasons(translator_id=translation_id)
         for i in range(1, len(series_list["episodes"][str(season_id)]) + 1):
-            episode_source = requests.get(
-                f"{API_URL}tv_series/videos/?url={self.url}&translation_id={translation_id}&season_id={season_id}&episode_id={i}"
-            ).json()
+            episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=i)
+
             file_name = f"{self.title} - {season_id}s{i}e.mp4"
 
             # remove symbols from file_name
@@ -92,9 +91,8 @@ class Download:
             self.__download(download_data)
 
     def Download_Episode(self, season_id, episode_id, translation_id):
-        episode_source = requests.get(
-            f"{API_URL}tv_series/videos/?url={self.url}&translation_id={translation_id}&season_id={season_id}&episode_id={episode_id}"
-        ).json()
+        episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=episode_id)
+
         file_name = f"{self.title} - {season_id}s{episode_id}e.mp4"
 
         # remove symbols from file_name

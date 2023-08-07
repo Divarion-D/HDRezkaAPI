@@ -17,7 +17,6 @@ class HdRezkaParser:
     def get_content_list(self):
         """Get a list of content from the given URL"""
         session = HTMLSession()
-        print(self.url)
         resp = session.get(self.url, headers=self.headers)
         html = BS(resp.html.html, "html.parser")
         content_list = html.find_all("div", class_="b-content__inline_item")

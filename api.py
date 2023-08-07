@@ -8,9 +8,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-import utils.HdRezka as HdRezka
-from helper.hd_rezka_api import HdRezkaApi
-from helper.hd_rezka_parser import HdRezkaParser
+from utils.HdRezka import search, details, translations, HdRezkaApi, HdRezkaParser
 
 # Create the FastAPI app
 app = FastAPI(title="web")
@@ -82,13 +80,13 @@ settings = Settings()
 # Create the search route
 @api_app.get("/search")
 async def search(query: str, page: int = 1):
-    return HdRezka.search(settings.get_settings("mirror"), query, page)
+    return search(settings.get_settings("mirror"), query, page)
 
 
 # Create the details route
 @api_app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
-    return HdRezka.details(settings.get_settings("mirror"), url, id)
+    return details(settings.get_settings("mirror"), url, id)
 
 
 # Create the translations route
@@ -96,7 +94,7 @@ async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None
 async def get_content_translations(
     url: Union[str, None] = None, id: Union[int, None] = None
 ):
-    return HdRezka.translations(settings.get_settings("mirror"), url, id)
+    return translations(settings.get_settings("mirror"), url, id)
 
 
 @api_app.get("/movie/videos")
