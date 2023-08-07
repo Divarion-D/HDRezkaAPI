@@ -93,7 +93,7 @@ class Download:
             self.__download(download_data)
 
     def Download_Episode(self, season_id, episode_id, translation_id):
-        episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=episode_id)
+        episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=episode_id).videos
 
         file_name = f"{self.title} - {season_id}s{episode_id}e.mp4"
 
