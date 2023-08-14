@@ -117,7 +117,8 @@ class HdRezkaApi:
         return BeautifulSoup(self.page.content, "html.parser")
 
     def extractId(self):
-        return self.soup.find(id="post_id").attrs["value"]
+        # return self.soup.find(id="post_id").attrs["value"]
+        return self.soup.find(id="send-video-issue").attrs["data-id"]
 
     def getName(self):
         return self.soup.find(class_="b-post__title").get_text().strip()
