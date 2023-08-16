@@ -50,10 +50,13 @@ class Download:
 
         detail_info_request = HdRezka.details(MIRROR_URL, self.url, None)
 
-        for i in range(len(detail_info_request["translations_id"])):
-            print(f"{i} - {detail_info_request['translations_id'][i]['name']}")
-        translation_id = int(input("Введите номер: "))
-        translation_id = detail_info_request["translations_id"][translation_id]["id"]
+        if detail_info_request["translations_id"] != []:
+            for i in range(len(detail_info_request["translations_id"])):
+                print(f"{i} - {detail_info_request['translations_id'][i]['name']}")
+            translation_id = int(input("Введите номер: "))
+            translation_id = detail_info_request["translations_id"][translation_id]["id"]
+        else:
+            translation_id = None
 
         print("1: Скачать сезон")
         print("2: Скачать серию")
@@ -69,7 +72,12 @@ class Download:
 
     def Download_Season(self, season_id, translation_id):
         # get series list
-        series_list = HdRezkaApi(self.url, MIRROR_URL).getSeasons(translator_id=translation_id)
+        if (translation_id is None):
+            series_list = HdRezkaApi(self.url, MIRROR_URL).getSeasons()
+            series_list = series_list[list(series_list.keys())[0]]
+        else:
+            series_list = HdRezkaApi(self.url, MIRROR_URL).getSeasons(translator_id=translation_id)
+
         for i in range(1, len(series_list["episodes"][str(season_id)]) + 1):
             episode_source = HdRezkaApi(self.url, MIRROR_URL).getStream(translation=translation_id, season=season_id, episode=i).videos
 
@@ -126,6 +134,11 @@ class Download:
 
         if not os.path.exists(os.path.dirname(fullpath)):
             os.makedirs(os.path.dirname(fullpath))
+
+        # check if file exists
+        if (os.path.exists(fullpath)):
+            print(f"File {download_data['file_name']} downloaded")
+            return
 
         with requests.get(
             url=download_data["stream_url"], stream=True, headers=HEADERS

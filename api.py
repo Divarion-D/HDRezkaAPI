@@ -136,7 +136,7 @@ async def get_tv_series_seasons(
     elif url is None:
         url = HdRezkaParser.get_url_by_id(settings.get_settings("mirror"), id)
         query = url.split("/", 3)[3]
-        url = f"{settings.get_settings('mirror')}{query}"
+        url = f"{settings.get_settings('mirror')}\{query}"
 
         if url == "error":
             return {"error": "film id not found"}

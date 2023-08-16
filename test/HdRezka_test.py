@@ -1,8 +1,7 @@
 import unittest
 from unittest.mock import patch
 from typing import Union
-import Helper.HdRezka as HdRezka
-
+import utils.HdRezka as HdRezka
 
 
 class TestTranslations(unittest.TestCase):
