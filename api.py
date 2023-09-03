@@ -5,7 +5,7 @@ import os
 from typing import Union
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
 from utils.HdRezka import search, details, translations, HdRezkaApi, HdRezkaParser
@@ -15,6 +15,15 @@ app = FastAPI(title="web")
 api_app = FastAPI(title="api")
 
 
+def home_page(request: Request):
+    # get ip
+    url = str(request.url)
+    return {"info": "This is HDRezkaApi", "api": url + "api", "api_docs": url + "api/docs", "api_redoc": url + "api/redoc", "web": url + "web"}
+
+
+# show home page in open /
+app.add_api_route("/", home_page)
+# mount the api 
 app.mount("/api", api_app)
 app.mount("/web", StaticFiles(directory="static", html=True), name="static")
 
