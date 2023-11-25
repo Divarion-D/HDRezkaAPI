@@ -6,26 +6,28 @@ from typing import Union
 
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
 
-from utils.HdRezka import search, details, translations, HdRezkaApi, HdRezkaParser
+from utils.HdRezka import search_hd, details_hd, translations_hd, HdRezkaApi, HdRezkaParser
 
 # Create the FastAPI app
-app = FastAPI(title="web")
-api_app = FastAPI(title="api")
+app = FastAPI(title="api")
 
 
 def home_page(request: Request):
     # get ip
     url = str(request.url)
-    return {"info": "This is HDRezkaApi", "api": url + "api", "api_docs": url + "api/docs", "api_redoc": url + "api/redoc", "web": url + "web"}
+    return {
+        "info": "This is HDRezkaApi",
+        "api": url + "api",
+        "api_docs": url + "api/docs",
+        "api_redoc": url + "api/redoc",
+    }
 
 
 # show home page in open /
 app.add_api_route("/", home_page)
-# mount the api 
-app.mount("/api", api_app)
-app.mount("/web", StaticFiles(directory="static", html=True), name="static")
+# mount the api
+app.mount("/api", app)
 
 
 # Create a custom openapi function
@@ -75,7 +77,7 @@ class Settings:
 
 
 # Set the custom openapi function
-api_app.openapi = custom_openapi
+app.openapi = custom_openapi
 # Create an instance of the Settings class
 settings = Settings()
 
@@ -87,26 +89,26 @@ settings = Settings()
 
 
 # Create the search route
-@api_app.get("/search")
+@app.get("/search")
 async def search(query: str, page: int = 1):
-    return search(settings.get_settings("mirror"), query, page)
+    return search_hd(settings.get_settings("mirror"), query, page)
 
 
 # Create the details route
-@api_app.get("/details")
+@app.get("/details")
 async def get_concrete(url: Union[str, None] = None, id: Union[int, None] = None):
-    return details(settings.get_settings("mirror"), url, id)
+    return details_hd(settings.get_settings("mirror"), url, id)
 
 
 # Create the translations route
-@api_app.get("/translations")
+@app.get("/translations")
 async def get_content_translations(
     url: Union[str, None] = None, id: Union[int, None] = None
 ):
-    return translations(settings.get_settings("mirror"), url, id)
+    return translations_hd(settings.get_settings("mirror"), url, id)
 
 
-@api_app.get("/movie/videos")
+@app.get("/movie/videos")
 async def get_movie_videos(
     url: Union[str, None] = None,
     id: Union[int, None] = None,
@@ -132,7 +134,7 @@ async def get_movie_videos(
     return stream.videos
 
 
-@api_app.get("/tv_series/seasons")
+@app.get("/tv_series/seasons")
 async def get_tv_series_seasons(
     url: Union[str, None] = None,
     id: Union[int, None] = None,
@@ -156,7 +158,7 @@ async def get_tv_series_seasons(
     return api.getSeasons(translator_id=translation_id)
 
 
-@api_app.get("/tv_series/videos")
+@app.get("/tv_series/videos")
 async def get_tv_series_videos(
     season_id: str,
     episode_id: str,
@@ -188,20 +190,20 @@ async def get_tv_series_videos(
     return stream.videos
 
 
-@api_app.get("/page/{page}")
+@app.get("/page/{page}")
 async def get_content(page: int, filter: str = "last", type: str = "all"):
     url: str = create_url(page, filter, type, settings.get_settings("mirror"))
     parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), url)
     return parser.get_content_list()
 
 
-@api_app.get("/genres")
+@app.get("/genres")
 async def get_genres(type: str = "films"):
     parser: HdRezkaParser = HdRezkaParser(settings.get_settings("mirror"), "")
     return parser.get_genres(type)
 
 
-@api_app.get("/category/page/{page}")
+@app.get("/category/page/{page}")
 async def get_content_by_categories(
     page: int = 1, type: str = "films", genre: str = "any", year: int = None
 ):

@@ -3,13 +3,15 @@ from helper.hd_rezka_api import HdRezkaApi
 from helper.hd_rezka_parser import HdRezkaParser
 
 
-def search(mirror: str, query: str, page: int = 1) -> list:
+def search_hd(mirror: str, query: str, page: int = 1) -> list:
     search_url = f"{mirror}/search/?do=search&subaction=search&q={query}&page={page}"
     parser = HdRezkaParser(mirror, search_url)
     return parser.get_content_list()
 
 
-def details(mirror: str, url: Union[str, None] = None, film_id: Union[int, None] = None) -> Union[dict, str]:
+def details_hd(
+    mirror: str, url: Union[str, None] = None, film_id: Union[int, None] = None
+) -> Union[dict, str]:
     if url and film_id:
         return {"error": "url and id cannot be used together"}
     elif url or film_id:
@@ -21,7 +23,9 @@ def details(mirror: str, url: Union[str, None] = None, film_id: Union[int, None]
         return {"error": "url or id is required"}
 
 
-def translations(mirror: str, url: str = None, film_id: int = None) -> Union[str, dict]:
+def translations_hd(
+    mirror: str, url: str = None, film_id: int = None
+) -> Union[str, dict]:
     if url and film_id:
         return {"error": "url and id cannot be used together"}
     elif url or film_id:
