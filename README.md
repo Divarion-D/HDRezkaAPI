@@ -2,6 +2,8 @@
 
 Исходный код https://github.com/vovaklh/HdRezkaApi
 
+### Проект заброшен и не поддерживается. Альтернатива для вытягивания видео файлов [здесь](https://github.com/Divarion-D/videograber_api)
+
 ## Запуск
 
 ### Параметры запуска python
