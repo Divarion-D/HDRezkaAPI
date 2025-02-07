@@ -1,6 +1,6 @@
 # HdRezka API
 
-Исходный код https://github.com/vovaklh/HdRezkaApi
+Исходный код https://github.com/SuperZombi/HdRezkaApi
 
 ### Проект заброшен и не поддерживается. Альтернатива для вытягивания видео файлов [здесь](https://github.com/Divarion-D/videograber_api)
 
